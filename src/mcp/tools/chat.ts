@@ -18,9 +18,28 @@ async function getBotClient() {
 }
 
 /**
+ * 通过邮箱列表批量查询飞书 user_id。
+ * 创建群聊时飞书不支持 email 类型，必须先转换为 user_id。
+ */
+async function resolveUserIds(
+  client: ReturnType<typeof createFeishuClient>,
+  emails: string[]
+): Promise<{ found: string[]; notFound: string[] }> {
+  const res = await client.post(
+    '/contact/v3/users/batch_get_id?user_id_type=user_id',
+    { emails }
+  );
+  const userList: Array<{ email: string; user_id?: string }> = res.data.data?.user_list ?? [];
+  const found = userList.filter((u) => u.user_id).map((u) => u.user_id!);
+  const notFound = userList.filter((u) => !u.user_id).map((u) => u.email);
+  return { found, notFound };
+}
+
+/**
  * 注册聊天相关工具：message_send_user、message_send_group、chat_create。
  * 所有工具均使用 app_access_token（以机器人身份发送消息和创建群聊）。
- * 发送消息使用 receive_id_type=email，直接以邮箱作为收件人标识。
+ * - 发送消息：receive_id_type=email，直接以邮箱作为收件人标识
+ * - 创建群聊：先通过邮箱查询 user_id，再以 user_id 创建
  *
  * @param server MCP 服务器实例
  */
@@ -81,14 +100,21 @@ export function registerChatTools(server: McpServer) {
       try {
         const client = await getBotClient();
         const emails = accounts.map(toEmail);
+        const { found: userIds, notFound } = await resolveUserIds(client, emails);
+
+        if (userIds.length === 0) {
+          return { content: [{ type: 'text' as const, text: '未找到任何有效用户，群聊创建取消' }] };
+        }
+
         const res = await client.post('/im/v1/chats', {
           name,
-          user_id_list: emails,
-          user_id_type: 'email',
+          user_id_list: userIds,
+          user_id_type: 'user_id',
         });
         const chatId = res.data.data?.chat_id;
+        const warnings = notFound.length > 0 ? `\n注意：以下账号未找到对应用户：${notFound.join(', ')}` : '';
         return {
-          content: [{ type: 'text' as const, text: `群聊已创建\nchat_id：${chatId}\n群名：${name}\n成员：${emails.join(', ')}` }],
+          content: [{ type: 'text' as const, text: `群聊已创建\nchat_id：${chatId}\n群名：${name}${warnings}` }],
         };
       } catch (err) {
         return { content: [{ type: 'text' as const, text: `创建群聊失败：${String(err)}` }] };
