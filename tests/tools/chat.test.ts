@@ -26,7 +26,7 @@ describe('chat tools', () => {
     const handler = (server as any)._registeredTools['message_send_user'].handler;
     const result = await handler({ account: 'alice', message: 'Hello!' });
     expect(result.content[0].text).toContain('msg_001');
-    expect(result.content[0].text).toContain('alice@iflytek.com');
+    expect(result.content[0].text).toContain('alice');
     // 直接发邮件，只调用一次 post
     expect(mockPost).toHaveBeenCalledTimes(1);
     expect(mockPost).toHaveBeenCalledWith(

@@ -3,6 +3,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { Db } from '../../db/index.js';
 import { getUserToken, AuthError } from '../../feishu/userAuth.js';
 import { createFeishuClient } from '../../feishu/client.js';
+import { logToolCall } from '../logger.js';
 
 /**
  * 注册文档相关工具：document_create、document_get、document_search、document_append。
@@ -21,6 +22,7 @@ export function registerDocumentTools(server: McpServer, sessionId: string, db: 
       content: z.string().optional().describe('文档初始内容（纯文本）'),
     },
     async ({ title, content }: { title: string; content?: string }) => {
+      logToolCall('document_create', { title, content });
       try {
         const token = await getUserToken(db, sessionId);
         const client = createFeishuClient(token);
@@ -58,6 +60,7 @@ export function registerDocumentTools(server: McpServer, sessionId: string, db: 
     '获取飞书文档的纯文本内容',
     { document_id: z.string().describe('文档 ID') },
     async ({ document_id }: { document_id: string }) => {
+      logToolCall('document_get', { document_id });
       try {
         const token = await getUserToken(db, sessionId);
         const client = createFeishuClient(token);
@@ -79,6 +82,7 @@ export function registerDocumentTools(server: McpServer, sessionId: string, db: 
       count: z.number().int().min(1).max(50).default(10).describe('返回结果数量'),
     },
     async ({ keyword, count }: { keyword: string; count: number }) => {
+      logToolCall('document_search', { keyword, count });
       try {
         const token = await getUserToken(db, sessionId);
         const client = createFeishuClient(token);
@@ -110,6 +114,7 @@ export function registerDocumentTools(server: McpServer, sessionId: string, db: 
       content: z.string().describe('要追加的内容（纯文本）'),
     },
     async ({ document_id, content }: { document_id: string; content: string }) => {
+      logToolCall('document_append', { document_id, content });
       try {
         const token = await getUserToken(db, sessionId);
         const client = createFeishuClient(token);

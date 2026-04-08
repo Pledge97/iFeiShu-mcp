@@ -1,6 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { Db } from '../../db/index.js';
 import { config } from '../../config.js';
+import { logToolCall } from '../logger.js';
 
 /**
  * 注册认证相关工具：auth_login、auth_status。
@@ -15,6 +16,7 @@ export function registerAuthTools(server: McpServer, sessionId: string, db: Db) 
     '生成飞书 OAuth 授权 URL，在浏览器中打开完成登录',
     {},
     async () => {
+      logToolCall('auth_login', { sessionId });
       const params = new URLSearchParams({
         app_id: config.feishu.appId,
         redirect_uri: config.oauth.redirectUri,
@@ -33,6 +35,7 @@ export function registerAuthTools(server: McpServer, sessionId: string, db: Db) 
     '查询当前会话的登录状态及用户信息',
     {},
     async () => {
+      logToolCall('auth_status', { sessionId });
       const session = db.getSession(sessionId);
       if (!session) {
         return {

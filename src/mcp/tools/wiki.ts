@@ -3,6 +3,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { Db } from '../../db/index.js';
 import { getUserToken, AuthError } from '../../feishu/userAuth.js';
 import { createFeishuClient } from '../../feishu/client.js';
+import { logToolCall } from '../logger.js';
 
 /**
  * 注册知识库相关工具：wiki_list_spaces、wiki_list_nodes、wiki_get_node。
@@ -18,6 +19,7 @@ export function registerWikiTools(server: McpServer, sessionId: string, db: Db) 
     '获取当前用户有权限的知识库列表',
     {},
     async () => {
+      logToolCall('wiki_list_spaces', {});
       try {
         const token = await getUserToken(db, sessionId);
         const client = createFeishuClient(token);
@@ -45,6 +47,7 @@ export function registerWikiTools(server: McpServer, sessionId: string, db: Db) 
       parent_node_token: z.string().optional().describe('父节点 token，不填则获取根节点'),
     },
     async ({ space_id, parent_node_token }: { space_id: string; parent_node_token?: string }) => {
+      logToolCall('wiki_list_nodes', { space_id, parent_node_token });
       try {
         const token = await getUserToken(db, sessionId);
         const client = createFeishuClient(token);
@@ -71,6 +74,7 @@ export function registerWikiTools(server: McpServer, sessionId: string, db: Db) 
     '获取知识库节点的详细信息',
     { node_token: z.string().describe('节点 token') },
     async ({ node_token }: { node_token: string }) => {
+      logToolCall('wiki_get_node', { node_token });
       try {
         const token = await getUserToken(db, sessionId);
         const client = createFeishuClient(token);

@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { getAppAccessToken } from '../../feishu/appAuth.js';
 import { createFeishuClient } from '../../feishu/client.js';
+import { logToolCall } from '../logger.js';
 
 /** 域账号转完整邮箱，例如 zhangsan → zhangsan@iflytek.com */
 function toEmail(account: string): string {
@@ -52,6 +53,7 @@ export function registerChatTools(server: McpServer) {
       message: z.string().describe('消息内容'),
     },
     async ({ account, message }: { account: string; message: string }) => {
+      logToolCall('message_send_user', { account, message });
       try {
         const client = await getBotClient();
         const email = toEmail(account);
@@ -60,7 +62,7 @@ export function registerChatTools(server: McpServer) {
           { receive_id: email, msg_type: 'text', content: JSON.stringify({ text: message }) }
         );
         const messageId = res.data.data?.message_id;
-        return { content: [{ type: 'text' as const, text: `消息已发送至 ${email}\nmessage_id：${messageId}` }] };
+        return { content: [{ type: 'text' as const, text: `消息已发送至 ${account}\nmessage_id：${messageId}` }] };
       } catch (err) {
         return { content: [{ type: 'text' as const, text: `发送失败：${String(err)}` }] };
       }
@@ -75,6 +77,7 @@ export function registerChatTools(server: McpServer) {
       message: z.string().describe('消息内容'),
     },
     async ({ chat_id, message }: { chat_id: string; message: string }) => {
+      logToolCall('message_send_group', { chat_id, message });
       try {
         const client = await getBotClient();
         const res = await client.post(
@@ -97,6 +100,7 @@ export function registerChatTools(server: McpServer) {
       accounts: z.array(z.string()).min(1).describe('成员域账号列表（不含 @iflytek.com）'),
     },
     async ({ name, accounts }: { name: string; accounts: string[] }) => {
+      logToolCall('chat_create', { name, accounts });
       try {
         const client = await getBotClient();
         const emails = accounts.map(toEmail);
