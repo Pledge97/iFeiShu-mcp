@@ -22,7 +22,7 @@ export function registerChatTools(server: McpServer) {
       email: z.string().email().describe('收件人飞书邮箱'),
       message: z.string().describe('消息内容'),
     },
-    async ({ email, message }) => {
+    async ({ email, message }: { email: string; message: string }) => {
       try {
         const client = await getBotClient();
         const users = await resolveEmails(client, [email]);
@@ -49,7 +49,7 @@ export function registerChatTools(server: McpServer) {
       chat_id: z.string().describe('群组 ID（oc_ 开头）'),
       message: z.string().describe('消息内容'),
     },
-    async ({ chat_id, message }) => {
+    async ({ chat_id, message }: { chat_id: string; message: string }) => {
       try {
         const client = await getBotClient();
         const res = await client.post(
@@ -71,12 +71,12 @@ export function registerChatTools(server: McpServer) {
       name: z.string().describe('群聊名称'),
       emails: z.array(z.string().email()).min(1).describe('成员邮箱列表'),
     },
-    async ({ name, emails }) => {
+    async ({ name, emails }: { name: string; emails: string[] }) => {
       try {
         const client = await getBotClient();
         const users = await resolveEmails(client, emails);
         const openIds = users.map((u) => u.open_id);
-        const notFound = emails.filter((e) => !users.find((u) => u.email === e));
+        const notFound = emails.filter((e: string) => !users.find((u) => u.email === e));
 
         const res = await client.post('/im/v1/chats', {
           name,

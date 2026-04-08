@@ -12,7 +12,7 @@ export function registerDocumentTools(server: McpServer, sessionId: string, db: 
       title: z.string().describe('文档标题'),
       content: z.string().optional().describe('文档初始内容（纯文本）'),
     },
-    async ({ title, content }) => {
+    async ({ title, content }: { title: string; content?: string }) => {
       try {
         const token = await getUserToken(db, sessionId);
         const client = createFeishuClient(token);
@@ -49,7 +49,7 @@ export function registerDocumentTools(server: McpServer, sessionId: string, db: 
     'document_get',
     '获取飞书文档的纯文本内容',
     { document_id: z.string().describe('文档 ID') },
-    async ({ document_id }) => {
+    async ({ document_id }: { document_id: string }) => {
       try {
         const token = await getUserToken(db, sessionId);
         const client = createFeishuClient(token);
@@ -70,7 +70,7 @@ export function registerDocumentTools(server: McpServer, sessionId: string, db: 
       keyword: z.string().describe('搜索关键词'),
       count: z.number().int().min(1).max(50).default(10).describe('返回结果数量'),
     },
-    async ({ keyword, count }) => {
+    async ({ keyword, count }: { keyword: string; count: number }) => {
       try {
         const token = await getUserToken(db, sessionId);
         const client = createFeishuClient(token);
@@ -101,7 +101,7 @@ export function registerDocumentTools(server: McpServer, sessionId: string, db: 
       document_id: z.string().describe('文档 ID'),
       content: z.string().describe('要追加的内容（纯文本）'),
     },
-    async ({ document_id, content }) => {
+    async ({ document_id, content }: { document_id: string; content: string }) => {
       try {
         const token = await getUserToken(db, sessionId);
         const client = createFeishuClient(token);

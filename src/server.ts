@@ -31,7 +31,7 @@ export function createApp(db: Db) {
     const newSessionId = randomUUID();
     const transport = new StreamableHTTPServerTransport({
       sessionIdGenerator: () => newSessionId,
-      onsessioninitialized: (sid) => {
+      onsessioninitialized: (sid: string) => {
         sessions.set(sid, transport);
       },
     });

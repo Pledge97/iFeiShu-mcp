@@ -36,7 +36,7 @@ export function registerWikiTools(server: McpServer, sessionId: string, db: Db) 
       space_id: z.string().describe('知识库 ID'),
       parent_node_token: z.string().optional().describe('父节点 token，不填则获取根节点'),
     },
-    async ({ space_id, parent_node_token }) => {
+    async ({ space_id, parent_node_token }: { space_id: string; parent_node_token?: string }) => {
       try {
         const token = await getUserToken(db, sessionId);
         const client = createFeishuClient(token);
@@ -62,7 +62,7 @@ export function registerWikiTools(server: McpServer, sessionId: string, db: Db) 
     'wiki_get_node',
     '获取知识库节点的详细信息',
     { node_token: z.string().describe('节点 token') },
-    async ({ node_token }) => {
+    async ({ node_token }: { node_token: string }) => {
       try {
         const token = await getUserToken(db, sessionId);
         const client = createFeishuClient(token);
