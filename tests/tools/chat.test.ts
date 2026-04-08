@@ -17,31 +17,22 @@ describe('chat tools', () => {
     registerChatTools(server);
   });
 
-  it('message_send_user resolves email to open_id then sends message', async () => {
-    const mockPost = vi.fn()
-      .mockResolvedValueOnce({
-        data: { code: 0, data: { user_list: [{ email: 'alice@example.com', open_id: 'ou_alice' }] } },
-      })
-      .mockResolvedValueOnce({
-        data: { code: 0, data: { message_id: 'msg_001' } },
-      });
-    vi.mocked(axios.create).mockReturnValue({ post: mockPost } as any);
-
-    const handler = (server as any)._registeredTools['message_send_user'].handler;
-    const result = await handler({ email: 'alice@example.com', message: 'Hello!' });
-    expect(result.content[0].text).toContain('msg_001');
-    expect(mockPost).toHaveBeenCalledTimes(2);
-  });
-
-  it('message_send_user returns error when email not found', async () => {
+  it('message_send_user sends message directly via email', async () => {
     const mockPost = vi.fn().mockResolvedValue({
-      data: { code: 0, data: { user_list: [] } },
+      data: { code: 0, data: { message_id: 'msg_001' } },
     });
     vi.mocked(axios.create).mockReturnValue({ post: mockPost } as any);
 
     const handler = (server as any)._registeredTools['message_send_user'].handler;
-    const result = await handler({ email: 'nobody@example.com', message: 'Hi' });
-    expect(result.content[0].text).toContain('未找到');
+    const result = await handler({ account: 'alice', message: 'Hello!' });
+    expect(result.content[0].text).toContain('msg_001');
+    expect(result.content[0].text).toContain('alice@iflytek.com');
+    // 直接发邮件，只调用一次 post
+    expect(mockPost).toHaveBeenCalledTimes(1);
+    expect(mockPost).toHaveBeenCalledWith(
+      '/im/v1/messages?receive_id_type=email',
+      expect.objectContaining({ receive_id: 'alice@iflytek.com' })
+    );
   });
 
   it('message_send_group sends message to chat_id', async () => {
@@ -55,21 +46,19 @@ describe('chat tools', () => {
     expect(result.content[0].text).toContain('msg_002');
   });
 
-  it('chat_create resolves emails and creates group chat', async () => {
-    const mockPost = vi.fn()
-      .mockResolvedValueOnce({
-        data: { code: 0, data: { user_list: [
-          { email: 'a@x.com', open_id: 'ou_a' },
-          { email: 'b@x.com', open_id: 'ou_b' },
-        ] } },
-      })
-      .mockResolvedValueOnce({
-        data: { code: 0, data: { chat_id: 'oc_newchat' } },
-      });
+  it('chat_create builds emails from accounts and creates group chat', async () => {
+    const mockPost = vi.fn().mockResolvedValue({
+      data: { code: 0, data: { chat_id: 'oc_newchat' } },
+    });
     vi.mocked(axios.create).mockReturnValue({ post: mockPost } as any);
 
     const handler = (server as any)._registeredTools['chat_create'].handler;
-    const result = await handler({ name: 'Project Alpha', emails: ['a@x.com', 'b@x.com'] });
+    const result = await handler({ name: 'Project Alpha', accounts: ['userA', 'userB'] });
     expect(result.content[0].text).toContain('oc_newchat');
+    expect(result.content[0].text).toContain('userA@iflytek.com');
+    expect(mockPost).toHaveBeenCalledWith(
+      '/im/v1/chats',
+      expect.objectContaining({ user_id_list: ['userA@iflytek.com', 'userB@iflytek.com'] })
+    );
   });
 });
