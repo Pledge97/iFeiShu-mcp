@@ -49,11 +49,11 @@ describe('chat tools', () => {
   it('chat_create resolves user_ids via email then creates group chat', async () => {
     const mockPost = vi.fn()
       .mockResolvedValueOnce({
-        // batch_get_id 返回 user_id
-        data: { code: 0, data: { user_list: [
-          { email: 'userA@iflytek.com', user_id: 'uid_a' },
-          { email: 'userB@iflytek.com', user_id: 'uid_b' },
-        ] } },
+        // /user/v1/batch_get_id 返回 email_users map
+        data: { code: 0, data: { email_users: {
+          'userA@iflytek.com': [{ user_id: 'uid_a', open_id: 'ou_a' }],
+          'userB@iflytek.com': [{ user_id: 'uid_b', open_id: 'ou_b' }],
+        } } },
       })
       .mockResolvedValueOnce({
         // create chat

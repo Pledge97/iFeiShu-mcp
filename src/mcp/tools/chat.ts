@@ -20,19 +20,26 @@ async function getBotClient() {
 
 /**
  * 通过邮箱列表批量查询飞书 user_id。
+ * 使用 /user/v1/batch_get_id（需要 contact:user.employee_id:readonly 权限）。
  * 创建群聊时飞书不支持 email 类型，必须先转换为 user_id。
  */
 async function resolveUserIds(
   client: ReturnType<typeof createFeishuClient>,
   emails: string[]
 ): Promise<{ found: string[]; notFound: string[] }> {
-  const res = await client.post(
-    '/contact/v3/users/batch_get_id?user_id_type=user_id',
-    { emails }
-  );
-  const userList: Array<{ email: string; user_id?: string }> = res.data.data?.user_list ?? [];
-  const found = userList.filter((u) => u.user_id).map((u) => u.user_id!);
-  const notFound = userList.filter((u) => !u.user_id).map((u) => u.email);
+  const res = await client.post('/user/v1/batch_get_id', { emails });
+  // v1 响应格式：{ email_users: { "email": [{ user_id, open_id }] } }
+  const emailUsers: Record<string, Array<{ user_id?: string }>> = res.data.data?.email_users ?? {};
+  const found: string[] = [];
+  const notFound: string[] = [];
+  for (const email of emails) {
+    const userId = emailUsers[email]?.[0]?.user_id;
+    if (userId) {
+      found.push(userId);
+    } else {
+      notFound.push(email);
+    }
+  }
   return { found, notFound };
 }
 
