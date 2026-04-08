@@ -20,7 +20,7 @@ export function registerAuthTools(server: McpServer, sessionId: string, db: Db) 
       const params = new URLSearchParams({
         app_id: config.feishu.appId,
         redirect_uri: config.oauth.redirectUri,
-        scope: 'wiki:wiki:readonly docx:document docs:doc drive:drive:readonly im:message:send_as_bot contact:contact:readonly',
+        scope: 'wiki:wiki:readonly docx:document drive:drive:readonly im:message:send_as_bot contact:contact:readonly',
         state: sessionId,
       });
       const url = `${config.feishu.baseUrl}/open-apis/authen/v1/authorize?${params}`;
