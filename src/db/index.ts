@@ -3,6 +3,7 @@ import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
 import { dirname } from 'path';
 import type { Session } from '../feishu/types.js';
 
+/** sql.js 初始化单例，避免重复加载 WASM 模块。 */
 let SQL: Awaited<ReturnType<typeof initSqlJs>> | null = null;
 
 async function getSql() {
@@ -12,6 +13,11 @@ async function getSql() {
   return SQL;
 }
 
+/**
+ * 创建（或加载）SQLite 数据库，返回会话操作接口。
+ * - 传入 ':memory:' 时使用内存数据库（测试用）
+ * - 传入文件路径时从磁盘加载，每次写操作后自动持久化
+ */
 export async function createDb(dbPath: string) {
   const sql = await getSql();
 
@@ -35,6 +41,7 @@ export async function createDb(dbPath: string) {
     )
   `);
 
+  /** 将内存中的数据库序列化写入磁盘（内存模式下跳过）。 */
   function persist() {
     if (dbPath === ':memory:') return;
     const dir = dirname(dbPath);

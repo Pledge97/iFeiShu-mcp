@@ -2,6 +2,13 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { Db } from '../../db/index.js';
 import { config } from '../../config.js';
 
+/**
+ * 注册认证相关工具：auth_login、auth_status。
+ *
+ * @param server    MCP 服务器实例
+ * @param sessionId 当前会话 ID，作为 OAuth state 参数使用
+ * @param db        数据库实例，用于查询登录状态
+ */
 export function registerAuthTools(server: McpServer, sessionId: string, db: Db) {
   server.tool(
     'auth_login',

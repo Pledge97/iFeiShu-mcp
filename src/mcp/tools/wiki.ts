@@ -4,6 +4,14 @@ import type { Db } from '../../db/index.js';
 import { getUserToken, AuthError } from '../../feishu/userAuth.js';
 import { createFeishuClient } from '../../feishu/client.js';
 
+/**
+ * 注册知识库相关工具：wiki_list_spaces、wiki_list_nodes、wiki_get_node。
+ * 所有工具均使用 user_access_token（以开发者个人身份查询知识库）。
+ *
+ * @param server    MCP 服务器实例
+ * @param sessionId 当前会话 ID，用于从数据库获取 user token
+ * @param db        数据库实例
+ */
 export function registerWikiTools(server: McpServer, sessionId: string, db: Db) {
   server.tool(
     'wiki_list_spaces',

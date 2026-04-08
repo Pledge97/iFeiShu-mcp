@@ -3,17 +3,33 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { getAppAccessToken } from '../../feishu/appAuth.js';
 import { createFeishuClient } from '../../feishu/client.js';
 
+/**
+ * 获取以机器人身份鉴权的飞书 API 客户端（使用 app_access_token）。
+ * 聊天类工具统一使用机器人身份，无需用户登录。
+ */
 async function getBotClient() {
   const token = await getAppAccessToken();
   return createFeishuClient(token);
 }
 
+/**
+ * 将邮箱列表批量解析为飞书 open_id。
+ * @param client 飞书 API 客户端
+ * @param emails 邮箱列表
+ * @returns 包含 email 和 open_id 的用户列表
+ */
 async function resolveEmails(client: ReturnType<typeof createFeishuClient>, emails: string[]) {
   const res = await client.post('/contact/v3/users/batch_get_id', { emails });
   const userList = res.data.data?.user_list ?? [];
   return userList as Array<{ email: string; open_id: string }>;
 }
 
+/**
+ * 注册聊天相关工具：message_send_user、message_send_group、chat_create。
+ * 所有工具均使用 app_access_token（以机器人身份发送消息和创建群聊）。
+ *
+ * @param server MCP 服务器实例
+ */
 export function registerChatTools(server: McpServer) {
   server.tool(
     'message_send_user',

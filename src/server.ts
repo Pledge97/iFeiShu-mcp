@@ -8,6 +8,13 @@ import { createMcpServer } from './mcp/index.js';
 import { config } from './config.js';
 import { getAppAccessToken } from './feishu/appAuth.js';
 
+/**
+ * 创建 Express 应用，挂载以下端点：
+ * - POST/GET/DELETE /mcp  — MCP Streamable HTTP 传输，每个连接对应独立 McpServer 实例
+ * - GET /oauth/callback   — 飞书 OAuth 授权回调，交换 code 获取并持久化用户 token
+ *
+ * @param db 数据库实例（进程内共享）
+ */
 export function createApp(db: Db) {
   const app = express();
   app.use(express.json());

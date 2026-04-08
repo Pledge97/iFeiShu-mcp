@@ -1,3 +1,4 @@
+/** 全局配置，从环境变量读取，启动时一次性解析。 */
 export const config = {
   feishu: {
     appId: process.env.FEISHU_APP_ID ?? '',

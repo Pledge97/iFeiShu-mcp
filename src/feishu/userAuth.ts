@@ -3,6 +3,7 @@ import type { Db } from '../db/index.js';
 import { config } from '../config.js';
 import { getAppAccessToken } from './appAuth.js';
 
+/** 认证相关错误，工具层捕获后直接返回给用户。 */
 export class AuthError extends Error {
   constructor(message: string) {
     super(message);
@@ -10,6 +11,12 @@ export class AuthError extends Error {
   }
 }
 
+/**
+ * 获取指定会话的有效 user_access_token。
+ * - token 未过期（剩余 > 60s）：直接返回缓存值
+ * - token 即将过期：用 refresh_token 静默续期后返回新 token
+ * - refresh_token 也失效：清除会话并抛出 AuthError，提示用户重新登录
+ */
 export async function getUserToken(db: Db, sessionId: string): Promise<string> {
   const session = db.getSession(sessionId);
   if (!session) {

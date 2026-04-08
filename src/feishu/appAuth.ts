@@ -1,9 +1,14 @@
 import axios from 'axios';
 import { config } from '../config.js';
 
+/** 进程内缓存的 app_access_token，过期前 60s 自动刷新。 */
 let cachedToken: string | null = null;
 let expiresAt = 0;
 
+/**
+ * 获取应用级 access token（tenant_access_token）。
+ * 结果在进程内缓存，过期前 60s 自动重新获取，调用方无需感知刷新逻辑。
+ */
 export async function getAppAccessToken(): Promise<string> {
   const now = Math.floor(Date.now() / 1000);
   if (cachedToken && now < expiresAt - 60) {
