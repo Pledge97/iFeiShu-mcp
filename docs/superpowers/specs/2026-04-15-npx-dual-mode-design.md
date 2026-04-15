@@ -102,7 +102,7 @@ export const config = {
     port: parseInt(process.env.PORT ?? '3000', 10),
     dbPath: process.argv.includes('--stdio')
       ? path.join(os.homedir(), '.xfchat-mcp', 'tokens.db')
-      : (process.env.DB_PATH ?? './data/tokens.db'),
+      : './data/tokens.db',
   },
 };
 ```
@@ -131,10 +131,10 @@ export const config = {
 
 ## token 存储路径
 
-| 模式 | 默认路径 | 可覆盖 |
-|------|----------|--------|
-| HTTP | `./data/tokens.db` | `DB_PATH` 环境变量 |
-| stdio | `~/.xfchat-mcp/tokens.db` | `DB_PATH` 环境变量 |
+| 模式 | 路径 |
+|------|------|
+| HTTP | `./data/tokens.db` |
+| stdio | `~/.xfchat-mcp/tokens.db` |
 
 ## 发布流程
 
