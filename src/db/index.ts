@@ -31,8 +31,7 @@ export async function createDb(dbPath: string) {
 
   db.run(`
     CREATE TABLE IF NOT EXISTS sessions (
-      session_id    TEXT PRIMARY KEY,
-      open_id       TEXT NOT NULL,
+      open_id       TEXT PRIMARY KEY,
       user_name     TEXT NOT NULL,
       access_token  TEXT NOT NULL,
       refresh_token TEXT NOT NULL,
@@ -51,9 +50,9 @@ export async function createDb(dbPath: string) {
   }
 
   return {
-    getSession(sessionId: string): Session | undefined {
-      const stmt = db.prepare('SELECT * FROM sessions WHERE session_id = ?');
-      stmt.bind([sessionId]);
+    getSession(openId: string): Session | undefined {
+      const stmt = db.prepare('SELECT * FROM sessions WHERE open_id = ?');
+      stmt.bind([openId]);
       if (stmt.step()) {
         const row = stmt.getAsObject() as unknown as Session;
         stmt.free();
@@ -64,18 +63,18 @@ export async function createDb(dbPath: string) {
     },
 
     upsertSession(session: Session): void {
+      // 单用户模式：清空旧记录，确保 DB 中永远只有一条
+      db.run('DELETE FROM sessions WHERE open_id != ?', [session.open_id]);
       db.run(
-        `INSERT INTO sessions (session_id, open_id, user_name, access_token, refresh_token, expires_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?)
-         ON CONFLICT(session_id) DO UPDATE SET
-           open_id       = excluded.open_id,
+        `INSERT INTO sessions (open_id, user_name, access_token, refresh_token, expires_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?)
+         ON CONFLICT(open_id) DO UPDATE SET
            user_name     = excluded.user_name,
            access_token  = excluded.access_token,
            refresh_token = excluded.refresh_token,
            expires_at    = excluded.expires_at,
            updated_at    = excluded.updated_at`,
         [
-          session.session_id,
           session.open_id,
           session.user_name,
           session.access_token,
@@ -87,8 +86,18 @@ export async function createDb(dbPath: string) {
       persist();
     },
 
-    deleteSession(sessionId: string): void {
-      db.run('DELETE FROM sessions WHERE session_id = ?', [sessionId]);
+    listSessions(): Session[] {
+      const stmt = db.prepare('SELECT * FROM sessions');
+      const rows: Session[] = [];
+      while (stmt.step()) {
+        rows.push(stmt.getAsObject() as unknown as Session);
+      }
+      stmt.free();
+      return rows;
+    },
+
+    deleteSession(openId: string): void {
+      db.run('DELETE FROM sessions WHERE open_id = ?', [openId]);
       persist();
     },
 

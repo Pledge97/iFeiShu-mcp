@@ -1,5 +1,6 @@
 import axios from 'axios';
 import type { Db } from '../db/index.js';
+import type { SessionContext } from './types.js';
 import { config } from '../config.js';
 import { getAppAccessToken } from './appAuth.js';
 
@@ -12,25 +13,41 @@ export class AuthError extends Error {
 }
 
 /**
- * 获取指定会话的有效 user_access_token。
- * - token 未过期（剩余 > 60s）：直接返回缓存值
- * - token 即将过期：用 refresh_token 静默续期后返回新 token
- * - refresh_token 也失效：清除会话并抛出 AuthError，提示用户重新登录
+ * 获取当前会话的有效 user_access_token。
+ *
+ * 自动绑定逻辑：若 ctx.openId 为 null（重启后新连接），
+ * 查询 DB 中的有效 session 数量：
+ *   - 恰好 1 条 → 自动绑定，无需用户操作
+ *   - 0 条或多条 → 抛出 AuthError 提示手动调用 auth_login
+ *
+ * - token 未过期（剩余 > 60s）：直接返回
+ * - token 即将过期：用 refresh_token 静默续期
+ * - refresh_token 也失效：清除后抛出 AuthError
  */
-export async function getUserToken(db: Db, sessionId: string): Promise<string> {
-  const session = db.getSession(sessionId);
+export async function getUserToken(db: Db, ctx: SessionContext): Promise<string> {
+  // 自动绑定：ctx.openId 为空时尝试从 DB 恢复
+  if (!ctx.openId) {
+    const all = db.listSessions();
+    if (all.length === 1) {
+      ctx.openId = all[0].open_id;
+    } else if (all.length === 0) {
+      throw new AuthError('未登录，请先调用 auth_login 完成登录');
+    } else {
+      throw new AuthError('检测到多个用户，请先调用 auth_login 确认身份');
+    }
+  }
+
+  const session = db.getSession(ctx.openId);
   if (!session) {
     throw new AuthError('未登录，请先调用 auth_login 完成登录');
   }
 
   const now = Math.floor(Date.now() / 1000);
 
-  // access_token 未过期（留 60s 缓冲）
   if (now < session.expires_at - 60) {
     return session.access_token;
   }
 
-  // 用 refresh_token 续期
   const appToken = await getAppAccessToken();
   try {
     const res = await axios.post(
@@ -55,7 +72,7 @@ export async function getUserToken(db: Db, sessionId: string): Promise<string> {
 
     return data.access_token;
   } catch {
-    db.deleteSession(sessionId);
+    db.deleteSession(ctx.openId!);
     throw new AuthError('登录已过期，请重新调用 auth_login');
   }
 }

@@ -4,6 +4,7 @@ import axios from 'axios';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { isInitializeRequest } from '@modelcontextprotocol/sdk/types.js';
 import type { Db } from './db/index.js';
+import type { SessionContext } from './feishu/types.js';
 import { createMcpServer } from './mcp/index.js';
 import { config } from './config.js';
 import { getAppAccessToken } from './feishu/appAuth.js';
@@ -20,6 +21,8 @@ export function createApp(db: Db) {
   app.use(express.json());
 
   const sessions = new Map<string, StreamableHTTPServerTransport>();
+  // mcpSessionId → SessionContext，OAuth 回调通过 state 找到对应 ctx 并写入 openId
+  const sessionContexts = new Map<string, SessionContext>();
 
   app.post('/mcp', async (req, res) => {
     const sessionId = req.headers['mcp-session-id'] as string | undefined;
@@ -36,6 +39,9 @@ export function createApp(db: Db) {
     }
 
     const newSessionId = randomUUID();
+    const ctx: SessionContext = { mcpSessionId: newSessionId, openId: null };
+    sessionContexts.set(newSessionId, ctx);
+
     const transport = new StreamableHTTPServerTransport({
       sessionIdGenerator: () => newSessionId,
       onsessioninitialized: (sid: string) => {
@@ -45,9 +51,10 @@ export function createApp(db: Db) {
 
     transport.onclose = () => {
       sessions.delete(newSessionId);
+      sessionContexts.delete(newSessionId);
     };
 
-    const server = createMcpServer(newSessionId, db);
+    const server = createMcpServer(ctx, db); // mcp/index.ts will be updated next
     await server.connect(transport);
     await transport.handleRequest(req, res, req.body);
   });
@@ -103,7 +110,6 @@ export function createApp(db: Db) {
 
       const now = Math.floor(Date.now() / 1000);
       db.upsertSession({
-        session_id: sessionId,
         open_id: userInfo.open_id,
         user_name: userInfo.name,
         access_token: tokenData.access_token,
@@ -111,6 +117,10 @@ export function createApp(db: Db) {
         expires_at: now + tokenData.expires_in,
         updated_at: now,
       });
+
+      // 将 openId 写入对应的 MCP 会话上下文（state 参数即 mcpSessionId）
+      const ctx = sessionContexts.get(sessionId);
+      if (ctx) ctx.openId = userInfo.open_id;
 
       res.send(`
         <html><body style="font-family:sans-serif;text-align:center;padding:60px">

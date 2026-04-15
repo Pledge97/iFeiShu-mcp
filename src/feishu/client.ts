@@ -6,7 +6,7 @@ import { config } from '../config.js';
  * @param token Bearer token（user_access_token 或 app_access_token）
  */
 export function createFeishuClient(token: string) {
-  return axios.create({
+  const client = axios.create({
     baseURL: `${config.feishu.baseUrl}/open-apis`,
     timeout: 15000,
     headers: {
@@ -14,4 +14,26 @@ export function createFeishuClient(token: string) {
       'Content-Type': 'application/json',
     },
   });
+
+  client.interceptors.response.use(
+    (res) => {
+      console.log(
+        `[API Response] ${res.config?.method?.toUpperCase()} ${res.config?.url}`,
+        JSON.stringify(res.data),
+      );
+      return res.data;
+    },
+    (err) => {
+      if (err.response) {
+        console.error(
+          `[API Error] ${err.config?.method?.toUpperCase()} ${err.config?.url}`,
+          `status=${err.response.status}`,
+          JSON.stringify(err.response.data),
+        );
+      }
+      return Promise.reject(err);
+    }
+  );
+
+  return client;
 }

@@ -59,7 +59,7 @@ auth_login
 
 token 会自动续期，通常只需登录一次（30 天内有效）。
 
-## 可用工具（共 12 个）
+## 可用工具（共 14 个）
 
 ### 认证
 
@@ -72,10 +72,12 @@ token 会自动续期，通常只需登录一次（30 天内有效）。
 
 | 工具 | 说明 |
 |------|------|
-| `document_create` | 创建新文档（支持标题和初始内容） |
+| `document_create` | 创建新文档，支持标题和初始内容（支持 Markdown） |
 | `document_get` | 获取文档纯文本内容 |
+| `document_get_by_url` | 根据飞书 URL 获取文档内容，支持个人空间（`/docx/...`）和知识库（`/wiki/...`）链接 |
 | `document_search` | 按关键词搜索文档 |
-| `document_append` | 向文档末尾追加内容 |
+| `document_overwrite` | 清空文档并替换为新内容（支持 Markdown） |
+| `document_append` | 向文档末尾追加内容（支持 Markdown） |
 
 ### 知识库
 
@@ -89,9 +91,8 @@ token 会自动续期，通常只需登录一次（30 天内有效）。
 
 | 工具 | 说明 |
 |------|------|
-| `message_send_user` | 向指定用户（邮箱）发送消息 |
-| `message_send_group` | 向指定群组（chat_id）发送消息 |
-| `chat_create` | 创建群聊并邀请成员（邮箱列表） |
+| `message_send_user` | 向指定用户发送消息，支持普通文本或卡片消息（卡片正文支持 Markdown） |
+| `message_send_group` | 向指定群组发送消息，支持普通文本、@所有人、卡片消息，传入群组名称即可 |
 
 ## 飞书应用权限清单
 
@@ -101,8 +102,7 @@ token 会自动续期，通常只需登录一次（30 天内有效）。
 - `drive:drive:readonly` — 搜索云盘文件
 - `wiki:wiki:readonly` — 查看知识库
 - `im:message:send_as_bot` — 机器人发消息
-- `im:chat:create` — 创建群聊
-- `contact:user.id:readonly` — 通过邮箱查找用户
+- `im:chat` — 查看群列表（按群名发消息）
 
 ## 技术架构
 

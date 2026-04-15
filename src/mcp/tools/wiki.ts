@@ -1,19 +1,12 @@
 import { z } from 'zod';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { Db } from '../../db/index.js';
+import type { SessionContext } from '../../feishu/types.js';
 import { getUserToken, AuthError } from '../../feishu/userAuth.js';
 import { createFeishuClient } from '../../feishu/client.js';
 import { logToolCall } from '../logger.js';
 
-/**
- * 注册知识库相关工具：wiki_list_spaces、wiki_list_nodes、wiki_get_node。
- * 所有工具均使用 user_access_token（以开发者个人身份查询知识库）。
- *
- * @param server    MCP 服务器实例
- * @param sessionId 当前会话 ID，用于从数据库获取 user token
- * @param db        数据库实例
- */
-export function registerWikiTools(server: McpServer, sessionId: string, db: Db) {
+export function registerWikiTools(server: McpServer, ctx: SessionContext, db: Db) {
   server.tool(
     'wiki_list_spaces',
     '获取当前用户有权限的知识库列表',
@@ -21,10 +14,10 @@ export function registerWikiTools(server: McpServer, sessionId: string, db: Db) 
     async () => {
       logToolCall('wiki_list_spaces', {});
       try {
-        const token = await getUserToken(db, sessionId);
+        const token = await getUserToken(db, ctx);
         const client = createFeishuClient(token);
         const res = await client.get('/wiki/v2/spaces');
-        const items = res.data.data?.items ?? [];
+        const items = res.data?.items ?? [];
         if (items.length === 0) {
           return { content: [{ type: 'text' as const, text: '暂无知识库' }] };
         }
@@ -49,12 +42,12 @@ export function registerWikiTools(server: McpServer, sessionId: string, db: Db) 
     async ({ space_id, parent_node_token }: { space_id: string; parent_node_token?: string }) => {
       logToolCall('wiki_list_nodes', { space_id, parent_node_token });
       try {
-        const token = await getUserToken(db, sessionId);
+        const token = await getUserToken(db, ctx);
         const client = createFeishuClient(token);
         const params: Record<string, string> = {};
         if (parent_node_token) params.parent_node_token = parent_node_token;
         const res = await client.get(`/wiki/v2/spaces/${space_id}/nodes`, { params });
-        const items = res.data.data?.items ?? [];
+        const items = res.data?.items ?? [];
         if (items.length === 0) {
           return { content: [{ type: 'text' as const, text: '该知识库下暂无节点' }] };
         }
@@ -76,10 +69,10 @@ export function registerWikiTools(server: McpServer, sessionId: string, db: Db) 
     async ({ node_token }: { node_token: string }) => {
       logToolCall('wiki_get_node', { node_token });
       try {
-        const token = await getUserToken(db, sessionId);
+        const token = await getUserToken(db, ctx);
         const client = createFeishuClient(token);
         const res = await client.get('/wiki/v2/spaces/get_node', { params: { token: node_token } });
-        const node = res.data.data?.node;
+        const node = res.data?.node;
         if (!node) {
           return { content: [{ type: 'text' as const, text: '节点不存在或无权限' }] };
         }

@@ -6,7 +6,7 @@ export const config = {
     baseUrl: process.env.FEISHU_BASE_URL ?? 'https://open.feishu.cn',
   },
   oauth: {
-    redirectUri: process.env.OAUTH_REDIRECT_URI ?? 'http://localhost:3000/oauth/callback',
+    redirectUri: process.env.OAUTH_REDIRECT_URI ?? 'http://localhost:5201/oauth/callback',
   },
   server: {
     port: parseInt(process.env.PORT ?? '3000', 10),

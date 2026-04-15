@@ -4,14 +4,23 @@ export interface FeishuResponse<T> {
   data: T;
 }
 
+/** 持久化到 SQLite 的用户 token，以 open_id 为主键（跨 MCP 连接复用）。 */
 export interface Session {
-  session_id: string;
   open_id: string;
   user_name: string;
   access_token: string;
   refresh_token: string;
   expires_at: number;   // Unix 秒
   updated_at: number;
+}
+
+/**
+ * 单个 MCP 连接的运行时上下文，存活于内存中。
+ * openId 在 OAuth 回调完成后写入，工具层通过它查找持久化 token。
+ */
+export interface SessionContext {
+  mcpSessionId: string;   // 传输层 UUID，用于 OAuth state 路由
+  openId: string | null;  // 飞书 open_id，登录后才有值
 }
 
 export interface AppTokenResponse {

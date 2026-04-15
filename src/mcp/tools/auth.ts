@@ -1,22 +1,17 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import type { Db } from '../../db/index.js'
+import type { SessionContext } from '../../feishu/types.js'
 import { config } from '../../config.js'
 import { logToolCall } from '../logger.js'
 
-/**
- * 注册认证相关工具：auth_login、auth_status。
- *
- * @param server    MCP 服务器实例
- * @param sessionId 当前会话 ID，作为 OAuth state 参数使用
- * @param db        数据库实例，用于查询登录状态
- */
-export function registerAuthTools(server: McpServer, sessionId: string, db: Db) {
+export function registerAuthTools(server: McpServer, ctx: SessionContext, db: Db) {
   server.tool('auth_login', '生成飞书 OAuth 授权 URL，在浏览器中打开完成登录', {}, async () => {
-    logToolCall('auth_login', { sessionId })
+    logToolCall('auth_login', { mcpSessionId: ctx.mcpSessionId })
     const params = new URLSearchParams({
       client_id: config.feishu.appId,
       redirect_uri: config.oauth.redirectUri,
-      state: sessionId
+      state: ctx.mcpSessionId,
+      scope: 'wiki:wiki docx:document drive:drive:readonly im:message im:message:send_as_bot contact:user.employee_id:readonly',
     })
     const url = `https://accounts.xfchat.iflytek.com/open-apis/authen/v1/authorize?${params}`
     return {
@@ -25,8 +20,13 @@ export function registerAuthTools(server: McpServer, sessionId: string, db: Db) 
   })
 
   server.tool('auth_status', '查询当前会话的登录状态及用户信息', {}, async () => {
-    logToolCall('auth_status', { sessionId })
-    const session = db.getSession(sessionId)
+    logToolCall('auth_status', { openId: ctx.openId })
+    if (!ctx.openId) {
+      return {
+        content: [{ type: 'text' as const, text: '未登录。请先调用 auth_login 完成授权。' }]
+      }
+    }
+    const session = db.getSession(ctx.openId)
     if (!session) {
       return {
         content: [{ type: 'text' as const, text: '未登录。请先调用 auth_login 完成授权。' }]
