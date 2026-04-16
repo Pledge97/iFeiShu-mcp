@@ -8,11 +8,7 @@
 
 #### HTTP 模式（团队共享）
 
-```bash
-npx xfchat-mcp
-```
-
-在 `~/.claude.json` 中配置：
+部署到服务器，在 `~/.claude.json` 中配置：
 
 ```json
 {
@@ -35,12 +31,13 @@ npx xfchat-mcp
     "feishu": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "xfchat-mcp", "--stdio"],
+      "args": ["-y", "iFeiShu-mcp", "--stdio"],
       "env": {
         "FEISHU_APP_ID": "cli_xxx",
         "FEISHU_APP_SECRET": "xxx",
         "FEISHU_BASE_URL": "https://open.xfchat.iflytek.com",
-        "OAUTH_REDIRECT_URI": "http://localhost:5201/oauth/callback"
+        "OAUTH_REDIRECT_URI": "http://localhost:5201/oauth/callback",
+        "FEISHU_DOC_URL": "https://yf2ljykclb.xfchat.iflytek.com"
       }
     }
   }
@@ -61,13 +58,13 @@ cp .env.example .env
 
 编辑 `.env`：
 
-| 变量 | 说明 |
-|------|------|
-| `FEISHU_APP_ID` | 飞书应用 app_id |
-| `FEISHU_APP_SECRET` | 飞书应用 app_secret |
-| `FEISHU_BASE_URL` | 飞书私有部署地址，如 `https://open.xfchat.iflytek.com` |
+| 变量                 | 说明                                                                            |
+| -------------------- | ------------------------------------------------------------------------------- |
+| `FEISHU_APP_ID`      | 飞书应用 app_id                                                                 |
+| `FEISHU_APP_SECRET`  | 飞书应用 app_secret                                                             |
+| `FEISHU_BASE_URL`    | 飞书私有部署地址，如 `https://open.xfchat.iflytek.com`                          |
 | `OAUTH_REDIRECT_URI` | OAuth 回调地址，需服务器内网可访问，如 `http://your-server:5201/oauth/callback` |
-| `PORT` | 服务端口，默认 5201 |
+| `PORT`               | 服务端口，默认 5201                                                             |
 
 ### 2. 安装依赖 & 启动
 
@@ -89,7 +86,7 @@ npm run build && npm start   # 生产模式
   "mcpServers": {
     "feishu": {
       "type": "http",
-      "url": "http://your-server:5201/mcp"
+      "url": "http://127.0.0.1:5201/mcp"
     }
   }
 }
@@ -111,36 +108,36 @@ token 会自动续期，通常只需登录一次（30 天内有效）。
 
 ### 认证
 
-| 工具 | 说明 |
-|------|------|
-| `auth_login` | 获取飞书登录授权链接 |
+| 工具          | 说明                       |
+| ------------- | -------------------------- |
+| `auth_login`  | 获取飞书登录授权链接       |
 | `auth_status` | 查看当前登录状态和用户信息 |
 
 ### 文档
 
-| 工具 | 说明 |
-|------|------|
-| `document_create` | 创建新文档，支持标题和初始内容（支持 Markdown） |
-| `document_get` | 获取文档纯文本内容 |
+| 工具                  | 说明                                                                              |
+| --------------------- | --------------------------------------------------------------------------------- |
+| `document_create`     | 创建新文档，支持标题和初始内容（支持 Markdown）                                   |
+| `document_get`        | 获取文档纯文本内容                                                                |
 | `document_get_by_url` | 根据飞书 URL 获取文档内容，支持个人空间（`/docx/...`）和知识库（`/wiki/...`）链接 |
-| `document_search` | 按关键词搜索文档 |
-| `document_overwrite` | 清空文档并替换为新内容（支持 Markdown） |
-| `document_append` | 向文档末尾追加内容（支持 Markdown） |
+| `document_search`     | 按关键词搜索文档                                                                  |
+| `document_overwrite`  | 清空文档并替换为新内容（支持 Markdown）                                           |
+| `document_append`     | 向文档末尾追加内容（支持 Markdown）                                               |
 
 ### 知识库
 
-| 工具 | 说明 |
-|------|------|
-| `wiki_list_spaces` | 获取知识库列表 |
-| `wiki_list_nodes` | 获取知识库节点列表（支持按父节点浏览目录） |
-| `wiki_get_node` | 获取知识库节点详情（含 document_id 提示） |
+| 工具                   | 说明                                                 |
+| ---------------------- | ---------------------------------------------------- |
+| `wiki_list_spaces`     | 获取知识库列表                                       |
+| `wiki_list_nodes`      | 获取知识库节点列表（支持按父节点浏览目录）           |
+| `wiki_get_node`        | 获取知识库节点详情（含 document_id 提示）            |
 | `wiki_create_document` | 在知识库指定目录下创建新文档，支持 Markdown 初始内容 |
 
 ### 聊天（机器人身份）
 
-| 工具 | 说明 |
-|------|------|
-| `message_send_user` | 向指定用户发送消息，支持普通文本或卡片消息（卡片正文支持 Markdown） |
+| 工具                 | 说明                                                                  |
+| -------------------- | --------------------------------------------------------------------- |
+| `message_send_user`  | 向指定用户发送消息，支持普通文本或卡片消息（卡片正文支持 Markdown）   |
 | `message_send_group` | 向指定群组发送消息，支持普通文本、@所有人、卡片消息，传入群组名称即可 |
 
 ## 飞书应用权限清单
