@@ -2,7 +2,56 @@
 
 飞书 MCP 服务，支持文档管理、知识库浏览和聊天机器人功能，通过 MCP Streamable HTTP 协议供多开发者使用。
 
-## 快速开始
+## 使用方式
+
+### 方式一：npx 启动（推荐）
+
+#### HTTP 模式（团队共享）
+
+```bash
+npx xfchat-mcp
+```
+
+在 `~/.claude.json` 中配置：
+
+```json
+{
+  "mcpServers": {
+    "feishu": {
+      "type": "http",
+      "url": "http://your-server:3000/mcp"
+    }
+  }
+}
+```
+
+#### stdio 模式（个人本地）
+
+在 `~/.claude.json` 中配置：
+
+```json
+{
+  "mcpServers": {
+    "feishu": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "xfchat-mcp", "--stdio"],
+      "env": {
+        "FEISHU_APP_ID": "cli_xxx",
+        "FEISHU_APP_SECRET": "xxx",
+        "FEISHU_BASE_URL": "https://open.xfchat.iflytek.com",
+        "OAUTH_REDIRECT_URI": "http://localhost:5201/oauth/callback"
+      }
+    }
+  }
+}
+```
+
+### 方式二：本地开发
+
+适合需要修改源码或调试的场景。
+
+## 本地开发快速开始
 
 ### 1. 配置环境变量
 
@@ -19,7 +68,6 @@ cp .env.example .env
 | `FEISHU_BASE_URL` | 飞书私有部署地址，如 `https://open.xfchat.iflytek.com` |
 | `OAUTH_REDIRECT_URI` | OAuth 回调地址，需服务器内网可访问，如 `http://your-server:3000/oauth/callback` |
 | `PORT` | 服务端口，默认 3000 |
-| `DB_PATH` | SQLite 数据库路径，默认 `./data/tokens.db` |
 
 ### 2. 安装依赖 & 启动
 
@@ -112,6 +160,9 @@ token 会自动续期，通常只需登录一次（30 天内有效）。
 - **认证：** 双 token 策略——文档/知识库用个人 OAuth token，消息发送用应用 bot token
 - **存储：** sql.js（纯 JS SQLite），无需编译原生模块
 - **token 刷新：** user_access_token 自动续期（2h），refresh_token 30 天有效
+- **token 存储：**
+  - HTTP 模式：`./data/tokens.db`（相对于启动目录）
+  - stdio 模式：`~/.xfchat-mcp/tokens.db`（用户 home 目录，跨重启持久化）
 
 ## 开发
 

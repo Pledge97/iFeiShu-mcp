@@ -7,6 +7,7 @@ vi.mock('../../src/config.js', () => ({
   config: {
     feishu: { appId: 'app_test', baseUrl: 'https://test.example.com' },
     oauth: { redirectUri: 'http://localhost:3000/oauth/callback' },
+    server: { mode: 'http' },
   },
 }));
 
@@ -14,7 +15,8 @@ describe('auth tools', () => {
   it('registers auth_login and auth_status tools', async () => {
     const server = new McpServer({ name: 'test', version: '1.0.0' });
     const db = await createDb(':memory:');
-    registerAuthTools(server, 'test-session-123', db);
+    const ctx = { mcpSessionId: 'test-session-123', openId: null };
+    registerAuthTools(server, ctx, db);
 
     const tools = (server as any)._registeredTools;
     expect(tools).toHaveProperty('auth_login');
@@ -24,7 +26,8 @@ describe('auth tools', () => {
   it('auth_status returns not_logged_in for unknown session', async () => {
     const db = await createDb(':memory:');
     const server = new McpServer({ name: 'test', version: '1.0.0' });
-    registerAuthTools(server, 'unknown-session', db);
+    const ctx = { mcpSessionId: 'unknown-session', openId: null };
+    registerAuthTools(server, ctx, db);
 
     const handler = (server as any)._registeredTools['auth_status'].handler;
     const result = await handler({});
@@ -34,7 +37,6 @@ describe('auth tools', () => {
   it('auth_status returns user info for logged-in session', async () => {
     const db = await createDb(':memory:');
     db.upsertSession({
-      session_id: 'sess-logged',
       open_id: 'ou_abc',
       user_name: 'Alice',
       access_token: 'at_x',
@@ -44,7 +46,8 @@ describe('auth tools', () => {
     });
 
     const server = new McpServer({ name: 'test', version: '1.0.0' });
-    registerAuthTools(server, 'sess-logged', db);
+    const ctx = { mcpSessionId: 'sess-logged', openId: 'ou_abc' };
+    registerAuthTools(server, ctx, db);
 
     const handler = (server as any)._registeredTools['auth_status'].handler;
     const result = await handler({});

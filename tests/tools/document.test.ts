@@ -9,10 +9,9 @@ vi.mock('../../src/feishu/appAuth.js', () => ({
   getAppAccessToken: vi.fn().mockResolvedValue('app_token_mock'),
 }));
 
-const SESSION_ID = 'doc-test-session';
+const OPEN_ID = 'ou_test';
 const SESSION = {
-  session_id: SESSION_ID,
-  open_id: 'ou_test',
+  open_id: OPEN_ID,
   user_name: 'Tester',
   access_token: 'user_token_mock',
   refresh_token: 'rt_mock',
@@ -29,14 +28,19 @@ describe('document tools', () => {
     db = await createDb(':memory:');
     db.upsertSession(SESSION);
     server = new McpServer({ name: 'test', version: '1.0.0' });
-    registerDocumentTools(server, SESSION_ID, db);
+    const ctx = { mcpSessionId: 'doc-test-session', openId: OPEN_ID };
+    registerDocumentTools(server, ctx, db);
   });
 
   it('document_create creates a document and returns its id', async () => {
     const mockPost = vi.fn().mockResolvedValue({
-      data: { code: 0, data: { document: { document_id: 'doc_abc', title: 'Test Doc', revision_id: 1 } } },
+      code: 0, data: { document: { document_id: 'doc_abc', title: 'Test Doc', revision_id: 1 } },
     });
-    vi.mocked(axios.create).mockReturnValue({ post: mockPost, get: vi.fn() } as any);
+    vi.mocked(axios.create).mockReturnValue({
+      post: mockPost,
+      get: vi.fn(),
+      interceptors: { response: { use: vi.fn() } },
+    } as any);
 
     const handler = (server as any)._registeredTools['document_create'].handler;
     const result = await handler({ title: 'Test Doc', content: '' });
@@ -45,15 +49,17 @@ describe('document tools', () => {
 
   it('document_search returns results list', async () => {
     const mockPost = vi.fn().mockResolvedValue({
+      code: 0,
       data: {
-        code: 0,
-        data: {
-          docs_entities: [{ doc_token: 't1', title: 'Doc One', doc_type: 'docx', url: 'http://example.com/t1', edit_time: '1000' }],
-          total: 1,
-        },
+        docs_entities: [{ doc_token: 't1', title: 'Doc One', doc_type: 'docx', url: 'http://example.com/t1', edit_time: '1000' }],
+        total: 1,
       },
     });
-    vi.mocked(axios.create).mockReturnValue({ post: mockPost, get: vi.fn() } as any);
+    vi.mocked(axios.create).mockReturnValue({
+      post: mockPost,
+      get: vi.fn(),
+      interceptors: { response: { use: vi.fn() } },
+    } as any);
 
     const handler = (server as any)._registeredTools['document_search'].handler;
     const result = await handler({ keyword: 'Doc', count: 10 });
@@ -63,7 +69,8 @@ describe('document tools', () => {
   it('document_get fails gracefully for unknown session', async () => {
     const serverNoSession = new McpServer({ name: 'test2', version: '1.0.0' });
     const emptyDb = await createDb(':memory:');
-    registerDocumentTools(serverNoSession, 'no-session', emptyDb);
+    const ctx = { mcpSessionId: 'no-session', openId: null };
+    registerDocumentTools(serverNoSession, ctx, emptyDb);
 
     const handler = (serverNoSession as any)._registeredTools['document_get'].handler;
     const result = await handler({ document_id: 'doc_xyz' });
