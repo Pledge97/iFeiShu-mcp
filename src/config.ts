@@ -7,6 +7,7 @@ export const config = {
     appId: process.env.FEISHU_APP_ID ?? 'cli_a945c0ae1938d37a',
     appSecret: process.env.FEISHU_APP_SECRET ?? 'thDzujBeZqLgID3ZJoaoDduimdMmOF4C',
     baseUrl: process.env.FEISHU_BASE_URL ?? 'https://open.feishu.cn',
+    docUrl: process.env.FEISHU_DOC_URL ?? 'https://yf2ljykclb.xfchat.iflytek.com'
   },
   oauth: {
     redirectUri: process.env.OAUTH_REDIRECT_URI ?? 'http://localhost:5201/oauth/callback',

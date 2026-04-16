@@ -6,6 +6,7 @@ import { getUserToken, AuthError } from '../../feishu/userAuth.js';
 import { createFeishuClient } from '../../feishu/client.js';
 import { logToolCall } from '../logger.js';
 import { markdownToFeishuBlocks, writeBlocksInBatches } from '../../feishu/markdownToBlocks.js';
+import { config } from '../../config.js';
 
 export function registerWikiTools(server: McpServer, ctx: SessionContext, db: Db) {
   server.tool(
@@ -142,7 +143,7 @@ export function registerWikiTools(server: McpServer, ctx: SessionContext, db: Db
               `标题：${title}`,
               `node_token：${node.node_token}`,
               `document_id：${node.obj_token}`,
-              `地址：https://yf2ljykclb.xfchat.iflytek.com/wiki/${node.node_token}`,
+              `地址：${config.feishu.docUrl}/wiki/${node.node_token}`,
             ].join('\n'),
           }],
         };

@@ -6,6 +6,7 @@ import { getUserToken, AuthError } from '../../feishu/userAuth.js';
 import { createFeishuClient } from '../../feishu/client.js';
 import { logToolCall } from '../logger.js';
 import { markdownToFeishuBlocks, writeBlocksInBatches } from '../../feishu/markdownToBlocks.js';
+import { config } from '../../config.js';
 
 export function registerDocumentTools(server: McpServer, ctx: SessionContext, db: Db) {
   server.tool(
@@ -32,7 +33,7 @@ export function registerDocumentTools(server: McpServer, ctx: SessionContext, db
         return {
           content: [{
             type: 'text' as const,
-            text: `文档已创建\ndocument_id：${doc.document_id}\n标题：${doc.title}\n地址：https://yf2ljykclb.xfchat.iflytek.com/docx/${doc.document_id}`,
+            text: `文档已创建\ndocument_id：${doc.document_id}\n标题：${doc.title}\n地址：${config.feishu.docUrl}/docx/${doc.document_id}`,
           }],
         };
       } catch (err) {
