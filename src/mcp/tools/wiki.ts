@@ -5,6 +5,7 @@ import type { SessionContext } from '../../feishu/types.js';
 import { getUserToken, AuthError } from '../../feishu/userAuth.js';
 import { createFeishuClient } from '../../feishu/client.js';
 import { logToolCall } from '../logger.js';
+import { markdownToFeishuBlocks, writeBlocksInBatches } from '../../feishu/markdownToBlocks.js';
 
 export function registerWikiTools(server: McpServer, ctx: SessionContext, db: Db) {
   server.tool(
@@ -88,6 +89,63 @@ export function registerWikiTools(server: McpServer, ctx: SessionContext, db: Db
             : '',
         ].filter(Boolean).join('\n');
         return { content: [{ type: 'text' as const, text }] };
+      } catch (err) {
+        const msg = err instanceof AuthError ? err.message : `飞书 API 错误：${String(err)}`;
+        return { content: [{ type: 'text' as const, text: msg }] };
+      }
+    }
+  );
+
+  server.tool(
+    'wiki_create_document',
+    '在知识库指定目录下创建新文档，支持 Markdown 初始内容',
+    {
+      space_id: z.string().describe('知识库 ID'),
+      parent_node_token: z.string().describe('父节点 token（目录节点），填知识库根节点 token 则创建在顶层'),
+      title: z.string().describe('文档标题'),
+      content: z.string().optional().describe('文档初始内容（支持 Markdown 格式）'),
+    },
+    async ({ space_id, parent_node_token, title, content }: {
+      space_id: string;
+      parent_node_token: string;
+      title: string;
+      content?: string;
+    }) => {
+      logToolCall('wiki_create_document', { space_id, parent_node_token, title });
+      try {
+        const token = await getUserToken(db, ctx);
+        const client = createFeishuClient(token);
+
+        // 在知识库指定目录下创建文档节点
+        const res = await client.post(`/wiki/v2/spaces/${space_id}/nodes`, {
+          obj_type: 'docx',
+          parent_node_token,
+          node_type: 'origin',
+          title,
+        });
+        const node = res.data?.node as { node_token: string; obj_token: string; title: string } | undefined;
+        if (!node) {
+          return { content: [{ type: 'text' as const, text: '创建失败：未返回节点信息' }] };
+        }
+
+        // 写入初始内容
+        if (content && content.trim()) {
+          const blocks = markdownToFeishuBlocks(content);
+          await writeBlocksInBatches(client, node.obj_token, blocks);
+        }
+
+        return {
+          content: [{
+            type: 'text' as const,
+            text: [
+              `文档已在知识库中创建`,
+              `标题：${title}`,
+              `node_token：${node.node_token}`,
+              `document_id：${node.obj_token}`,
+              `地址：https://yf2ljykclb.xfchat.iflytek.com/wiki/${node.node_token}`,
+            ].join('\n'),
+          }],
+        };
       } catch (err) {
         const msg = err instanceof AuthError ? err.message : `飞书 API 错误：${String(err)}`;
         return { content: [{ type: 'text' as const, text: msg }] };

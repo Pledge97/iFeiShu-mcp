@@ -13,7 +13,7 @@ export function registerAuthTools(server: McpServer, ctx: SessionContext, db: Db
       state: ctx.mcpSessionId,
       scope: 'wiki:wiki docx:document drive:drive:readonly im:message im:message:send_as_bot contact:user.employee_id:readonly',
     })
-    const url = `https://accounts.xfchat.iflytek.com/open-apis/authen/v1/authorize?${params}`
+    const url = `${config.oauth.authUrl}/open-apis/authen/v1/authorize?${params}`
     return {
       content: [{ type: 'text' as const, text: `请在浏览器中打开以下 URL 完成飞书登录：\n\n${url}` }]
     }

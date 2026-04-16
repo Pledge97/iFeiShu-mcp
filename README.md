@@ -84,8 +84,9 @@ token 会自动续期，通常只需登录一次（30 天内有效）。
 | 工具 | 说明 |
 |------|------|
 | `wiki_list_spaces` | 获取知识库列表 |
-| `wiki_list_nodes` | 获取知识库节点列表 |
+| `wiki_list_nodes` | 获取知识库节点列表（支持按父节点浏览目录） |
 | `wiki_get_node` | 获取知识库节点详情（含 document_id 提示） |
+| `wiki_create_document` | 在知识库指定目录下创建新文档，支持 Markdown 初始内容 |
 
 ### 聊天（机器人身份）
 
@@ -101,6 +102,7 @@ token 会自动续期，通常只需登录一次（30 天内有效）。
 - `docx:document` — 查看、编辑文档
 - `drive:drive:readonly` — 搜索云盘文件
 - `wiki:wiki:readonly` — 查看知识库
+- `wiki:wiki` — 在知识库中创建文档（`wiki_create_document` 工具需要）
 - `im:message:send_as_bot` — 机器人发消息
 - `im:chat` — 查看群列表（按群名发消息）
 

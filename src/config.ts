@@ -7,6 +7,7 @@ export const config = {
   },
   oauth: {
     redirectUri: process.env.OAUTH_REDIRECT_URI ?? 'http://localhost:5201/oauth/callback',
+    authUrl: process.env.OAUTH_BASE_URL ?? 'https://accounts.xfchat.iflytek.com'
   },
   server: {
     port: parseInt(process.env.PORT ?? '3000', 10),
