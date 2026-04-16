@@ -6,7 +6,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 vi.mock('../../src/config.js', () => ({
   config: {
     feishu: { appId: 'app_test', baseUrl: 'https://test.example.com' },
-    oauth: { redirectUri: 'http://localhost:3000/oauth/callback' },
+    oauth: { redirectUri: 'http://localhost:5201/oauth/callback' },
     server: { mode: 'http' },
   },
 }));

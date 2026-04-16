@@ -134,10 +134,10 @@ FEISHU_APP_SECRET=xxx
 FEISHU_BASE_URL=https://open.xfchat.iflytek.com
 
 # OAuth 回调地址（服务器公网/内网地址）
-OAUTH_REDIRECT_URI=http://localhost:3000/oauth/callback
+OAUTH_REDIRECT_URI=http://localhost:5201/oauth/callback
 
 # 服务配置
-PORT=3000
+PORT=5201
 DB_PATH=./data/tokens.db
 ```
 
@@ -185,10 +185,10 @@ export const config = {
     baseUrl: process.env.FEISHU_BASE_URL ?? 'https://open.feishu.cn',
   },
   oauth: {
-    redirectUri: process.env.OAUTH_REDIRECT_URI ?? 'http://localhost:3000/oauth/callback',
+    redirectUri: process.env.OAUTH_REDIRECT_URI ?? 'http://localhost:5201/oauth/callback',
   },
   server: {
-    port: parseInt(process.env.PORT ?? '3000', 10),
+    port: parseInt(process.env.PORT ?? '5201', 10),
     dbPath: process.env.DB_PATH ?? './data/tokens.db',
   },
 };
@@ -781,7 +781,7 @@ export function createMcpServer(_sessionId: string, _db: Db) {
 npx tsx src/index.ts
 ```
 
-Expected: `Feishu MCP server running on port 3000`（Ctrl+C 停止）
+Expected: `Feishu MCP server running on port 5201`（Ctrl+C 停止）
 
 - [ ] **Step 5: Commit**
 
@@ -892,7 +892,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 vi.mock('../../src/config.js', () => ({
   config: {
     feishu: { appId: 'app_test', baseUrl: 'https://test.example.com' },
-    oauth: { redirectUri: 'http://localhost:3000/oauth/callback' },
+    oauth: { redirectUri: 'http://localhost:5201/oauth/callback' },
   },
 }));
 
@@ -1752,8 +1752,8 @@ npx tsx src/index.ts
 
 Expected:
 ```
-Feishu MCP server running on port 3000
-MCP endpoint: http://localhost:3000/mcp
+Feishu MCP server running on port 5201
+MCP endpoint: http://localhost:5201/mcp
 ```
 
 - [ ] **Step 2: 验证 MCP 端点响应**
@@ -1761,7 +1761,7 @@ MCP endpoint: http://localhost:3000/mcp
 新开终端：
 
 ```bash
-curl -X POST http://localhost:3000/mcp \
+curl -X POST http://localhost:5201/mcp \
   -H "Content-Type: application/json" \
   -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test","version":"1.0"}}}'
 ```
@@ -1790,8 +1790,8 @@ cp .env.example .env
 | `FEISHU_APP_ID` | 飞书应用 app_id |
 | `FEISHU_APP_SECRET` | 飞书应用 app_secret |
 | `FEISHU_BASE_URL` | 飞书私有部署地址，如 `https://open.xfchat.iflytek.com` |
-| `OAUTH_REDIRECT_URI` | OAuth 回调地址，需内网可访问，如 `http://your-server:3000/oauth/callback` |
-| `PORT` | 服务端口，默认 3000 |
+| `OAUTH_REDIRECT_URI` | OAuth 回调地址，需内网可访问，如 `http://your-server:5201/oauth/callback` |
+| `PORT` | 服务端口，默认 5201 |
 | `DB_PATH` | SQLite 路径，默认 `./data/tokens.db` |
 
 ### 2. 安装依赖 & 启动
@@ -1812,7 +1812,7 @@ npm run build && npm start   # 生产模式
   "mcpServers": {
     "feishu": {
       "type": "http",
-      "url": "http://your-server:3000/mcp"
+      "url": "http://your-server:5201/mcp"
     }
   }
 }

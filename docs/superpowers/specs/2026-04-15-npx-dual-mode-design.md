@@ -18,14 +18,14 @@ status: approved
 ### HTTP 模式
 
 ```bash
-npx xfchat-mcp   # 启动 HTTP 服务，监听 PORT（默认 3000）
+npx xfchat-mcp   # 启动 HTTP 服务，监听 PORT（默认 5201）
 ```
 
 Claude Code 配置：
 ```json
 {
   "type": "http",
-  "url": "http://your-server:3000/mcp"
+  "url": "http://your-server:5201/mcp"
 }
 ```
 
@@ -99,7 +99,7 @@ export const config = {
   // ...现有字段不变...
   server: {
     mode: process.argv.includes('--stdio') ? 'stdio' : 'http',
-    port: parseInt(process.env.PORT ?? '3000', 10),
+    port: parseInt(process.env.PORT ?? '5201', 10),
     dbPath: process.argv.includes('--stdio')
       ? path.join(os.homedir(), '.xfchat-mcp', 'tokens.db')
       : './data/tokens.db',

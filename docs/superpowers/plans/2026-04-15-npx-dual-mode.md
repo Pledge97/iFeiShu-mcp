@@ -48,7 +48,7 @@ export const config = {
   },
   server: {
     mode: process.argv.includes('--stdio') ? ('stdio' as const) : ('http' as const),
-    port: parseInt(process.env.PORT ?? '3000', 10),
+    port: parseInt(process.env.PORT ?? '5201', 10),
     dbPath: process.argv.includes('--stdio')
       ? join(homedir(), '.xfchat-mcp', 'tokens.db')
       : './data/tokens.db',
@@ -493,7 +493,7 @@ npx xfchat-mcp
   "mcpServers": {
     "feishu": {
       "type": "http",
-      "url": "http://your-server:3000/mcp"
+      "url": "http://your-server:5201/mcp"
     }
   }
 }
@@ -551,7 +551,7 @@ Expected: Build succeeds, `dist/` directory created
 - [ ] **Step 2: 测试 HTTP 模式启动**
 
 Run: `node dist/index.js`
-Expected: 输出 "Feishu MCP server running on port 3000"
+Expected: 输出 "Feishu MCP server running on port 5201"
 
 按 Ctrl+C 停止
 
@@ -627,7 +627,7 @@ git commit -m "docs: add token storage and npm publish instructions"
 
 ## 验收标准
 
-- [ ] `npx xfchat-mcp` 启动 HTTP 服务（默认端口 3000）
+- [ ] `npx xfchat-mcp` 启动 HTTP 服务（默认端口 5201）
 - [ ] `npx xfchat-mcp --stdio` 启动 stdio 模式（无输出，等待 MCP 客户端）
 - [ ] stdio 模式下 `auth_login` 临时启动 HTTP server，回调成功后关闭
 - [ ] HTTP 模式行为与修改前完全一致

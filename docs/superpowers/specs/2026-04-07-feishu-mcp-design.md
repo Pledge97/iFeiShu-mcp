@@ -181,7 +181,7 @@ FEISHU_BASE_URL=https://open.xfchat.iflytek.com
 OAUTH_REDIRECT_URI=https://<your-server>/oauth/callback
 
 # 服务配置
-PORT=3000
+PORT=5201
 DB_PATH=./data/tokens.db
 ```
 
@@ -194,7 +194,7 @@ DB_PATH=./data/tokens.db
   "mcpServers": {
     "feishu": {
       "type": "http",
-      "url": "http://<your-server>:3000/mcp"
+      "url": "http://<your-server>:5201/mcp"
     }
   }
 }

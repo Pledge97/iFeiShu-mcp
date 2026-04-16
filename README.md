@@ -1,6 +1,6 @@
 # Feishu MCP Server
 
-飞书 MCP 服务，支持文档管理、知识库浏览和聊天机器人功能，通过 MCP Streamable HTTP 协议供多开发者使用。
+飞书 MCP 服务，支持文档管理、知识库浏览和聊天机器人功能
 
 ## 使用方式
 
@@ -19,7 +19,7 @@ npx xfchat-mcp
   "mcpServers": {
     "feishu": {
       "type": "http",
-      "url": "http://your-server:3000/mcp"
+      "url": "http://your-server:5201/mcp"
     }
   }
 }
@@ -66,8 +66,8 @@ cp .env.example .env
 | `FEISHU_APP_ID` | 飞书应用 app_id |
 | `FEISHU_APP_SECRET` | 飞书应用 app_secret |
 | `FEISHU_BASE_URL` | 飞书私有部署地址，如 `https://open.xfchat.iflytek.com` |
-| `OAUTH_REDIRECT_URI` | OAuth 回调地址，需服务器内网可访问，如 `http://your-server:3000/oauth/callback` |
-| `PORT` | 服务端口，默认 3000 |
+| `OAUTH_REDIRECT_URI` | OAuth 回调地址，需服务器内网可访问，如 `http://your-server:5201/oauth/callback` |
+| `PORT` | 服务端口，默认 5201 |
 
 ### 2. 安装依赖 & 启动
 
@@ -89,7 +89,7 @@ npm run build && npm start   # 生产模式
   "mcpServers": {
     "feishu": {
       "type": "http",
-      "url": "http://your-server:3000/mcp"
+      "url": "http://your-server:5201/mcp"
     }
   }
 }
@@ -167,7 +167,7 @@ token 会自动续期，通常只需登录一次（30 天内有效）。
 ## 开发
 
 ```bash
-npm test          # 运行测试（19 个）
+npm test          # 运行测试（17 个）
 npm run test:watch  # 监听模式
 npx tsc --noEmit  # 类型检查
 ```

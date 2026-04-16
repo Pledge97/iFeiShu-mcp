@@ -1,10 +1,10 @@
 {
-  "name": "xfchat-mcp",
+  "name": "iFeiShu-mcp",
   "version": "1.0.0",
   "private": false,
   "type": "module",
   "bin": {
-    "xfchat-mcp": "dist/index.js"
+    "iFeiShu-mcp": "dist/index.js"
   },
   "files": [
     "dist/",

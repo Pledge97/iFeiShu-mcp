@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(node -e \"require\\('./node_modules/better-sqlite3'\\)\")",
+      "Bash(node -e \"const db = require\\('./node_modules/better-sqlite3'\\)\\(':memory:'\\); console.log\\('ok'\\)\")",
+      "Bash(npx node-pre-gyp:*)",
+      "Bash(where node-gyp:*)",
+      "Bash(node-gyp --version)",
+      "Bash(npx node-gyp:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(node -e \"const initSqlJs = require\\('./node_modules/sql.js'\\); initSqlJs\\(\\).then\\(SQL => { const db = new SQL.Database\\(\\); console.log\\('sql.js ok'\\); }\\)\")",
+      "Bash(npx vitest:*)",
+      "Bash(node -e ':*)",
+      "Bash(npx tsc:*)",
+      "Bash(node -e \"import\\('@modelcontextprotocol/sdk/types.js'\\).then\\(m => console.log\\(Object.keys\\(m\\).filter\\(k => k.includes\\('nitialize'\\)\\)\\)\\)\")",
+      "Bash(cp .env.example .env)",
+      "Bash(timeout 5 npx tsx src/index.ts)",
+      "Bash(npx tsx:*)",
+      "Bash(curl -s -X POST http://localhost:5201/mcp -H 'Content-Type: application/json' -d '{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2024-11-05\",\"capabilities\":{},\"clientInfo\":{\"name\":\"test\",\"version\":\"1.0\"}}}')",
+      "Bash(kill %1)",
+      "Bash(curl -s -X POST http://localhost:5201/mcp -H 'Content-Type: application/json' -H 'Accept: application/json, text/event-stream' -d '{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2024-11-05\",\"capabilities\":{},\"clientInfo\":{\"name\":\"test\",\"version\":\"1.0\"}}}')",
+      "Bash(nvm use:*)",
+      "Bash(curl -s http://localhost:5201/mcp -X POST -H \"Content-Type: application/json\" -d '{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2024-11-05\",\"capabilities\":{},\"clientInfo\":{\"name\":\"test\",\"version\":\"1.0\"}}}')",
+      "Bash(npm list:*)",
+      "Bash(npm bin:*)",
+      "Bash(npm config:*)",
+      "Bash(npm test *)"
+    ]
+  }
+}
