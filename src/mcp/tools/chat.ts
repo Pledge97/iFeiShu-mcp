@@ -297,6 +297,83 @@ export function registerChatTools(server: McpServer, ctx: SessionContext, db: Db
     }
   );
 
+  server.tool(
+    'message_get_history',
+    '按 chat_id 获取会话历史消息',
+    {
+      chat_id: z.string().describe('会话 ID'),
+      count: z.number().min(1).max(100).optional().default(20).describe('返回消息数量，默认 20'),
+      sort_type: z.enum(['ByCreateTimeAsc', 'ByCreateTimeDesc']).optional().default('ByCreateTimeAsc').describe('排序方式'),
+      start_time: z.number().optional().describe('起始时间（秒级时间戳）'),
+      end_time: z.number().optional().describe('结束时间（秒级时间戳）'),
+    },
+    async ({ chat_id, count, sort_type, start_time, end_time }: {
+      chat_id: string;
+      count?: number;
+      sort_type?: 'ByCreateTimeAsc' | 'ByCreateTimeDesc';
+      start_time?: number;
+      end_time?: number;
+    }) => {
+      logToolCall('message_get_history', { chat_id, count, sort_type, start_time, end_time });
+      try {
+        const token = await getUserToken(db, ctx);
+        const client = createFeishuClient(token);
+
+        const pageSize = count ?? 20;
+        const messages: any[] = [];
+        let pageToken = '';
+
+        while (messages.length < pageSize) {
+          const params: Record<string, any> = {
+            container_id_type: 'chat',
+            container_id: chat_id,
+            page_size: Math.min(pageSize - messages.length, 100),
+            sort_type: sort_type ?? 'ByCreateTimeAsc',
+          };
+          if (pageToken) params.page_token = pageToken;
+          if (start_time) params.start_time = String(start_time);
+          if (end_time) params.end_time = String(end_time);
+
+          const res = await client.get('/im/v1/messages', { params });
+          const items = res.data?.items ?? [];
+          messages.push(...items);
+
+          if (!res.data?.has_more) break;
+          pageToken = res.data?.page_token ?? '';
+          if (!pageToken) break;
+        }
+
+        if (messages.length === 0) {
+          return { content: [{ type: 'text' as const, text: '该会话暂无历史消息' }] };
+        }
+
+        const lines = messages.slice(0, pageSize).map((msg: any) => {
+          const msgId = msg.message_id;
+          const createTime = msg.create_time ? new Date(Number(msg.create_time) * 1000).toISOString() : '未知时间';
+          const msgType = msg.msg_type || 'unknown';
+          const senderId = msg.sender?.id || '未知';
+
+          let textContent = '';
+          if (msg.body?.content) {
+            try {
+              const parsed = JSON.parse(msg.body.content);
+              textContent = parsed.text || JSON.stringify(parsed).slice(0, 100);
+            } catch {
+              textContent = String(msg.body.content).slice(0, 100);
+            }
+          }
+
+          return `[${createTime}] ${senderId}\n类型: ${msgType}\n内容: ${textContent}\nmessage_id: ${msgId}`;
+        });
+
+        return { content: [{ type: 'text' as const, text: `历史消息（共 ${lines.length} 条）：\n\n${lines.join('\n\n---\n\n')}` }] };
+      } catch (err) {
+        const msg = err instanceof AuthError ? err.message : `飞书 API 错误：${String(err)}`;
+        return { content: [{ type: 'text' as const, text: msg }] };
+      }
+    }
+  );
+
   /* server.tool(
     'chat_create',
     '创建新的飞书群聊并邀请指定成员，传入域账号列表即可（如 ["zhangsan", "lisi"]）',

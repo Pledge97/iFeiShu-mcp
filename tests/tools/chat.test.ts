@@ -94,4 +94,46 @@ describe('chat tools', () => {
       params: expect.objectContaining({ page_size: 20 }),
     }));
   });
+
+  it('message_get_history returns chat messages', async () => {
+    const mockGet = vi.fn().mockResolvedValue({
+      code: 0,
+      data: {
+        items: [
+          {
+            message_id: 'om_001',
+            create_time: '1713254400',
+            msg_type: 'text',
+            body: { content: '{"text":"Hello"}' },
+            sender: { id: 'ou_123', sender_type: 'user' },
+          },
+          {
+            message_id: 'om_002',
+            create_time: '1713254500',
+            msg_type: 'text',
+            body: { content: '{"text":"World"}' },
+            sender: { id: 'ou_456', sender_type: 'user' },
+          },
+        ],
+        has_more: false,
+      },
+    });
+    vi.mocked(axios.create).mockReturnValue({
+      get: mockGet,
+      post: vi.fn(),
+      interceptors: { response: { use: vi.fn() } },
+    } as any);
+
+    const handler = (server as any)._registeredTools['message_get_history']?.handler;
+    expect(handler).toBeDefined();
+    const result = await handler({ chat_id: 'oc_test123', count: 20 });
+    expect(result.content[0].text).toContain('om_001');
+    expect(result.content[0].text).toContain('Hello');
+    expect(mockGet).toHaveBeenCalledWith('/im/v1/messages', expect.objectContaining({
+      params: expect.objectContaining({
+        container_id_type: 'chat',
+        container_id: 'oc_test123',
+      }),
+    }));
+  });
 });
