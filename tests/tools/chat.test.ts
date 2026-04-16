@@ -2,10 +2,16 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import axios from 'axios';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { registerChatTools } from '../../src/mcp/tools/chat.js';
+import type { Db } from '../../src/db/index.js';
+import type { SessionContext } from '../../src/feishu/types.js';
 
 vi.mock('axios');
 vi.mock('../../src/feishu/appAuth.js', () => ({
   getAppAccessToken: vi.fn().mockResolvedValue('app_tok_mock'),
+}));
+vi.mock('../../src/feishu/userAuth.js', () => ({
+  getUserToken: vi.fn().mockResolvedValue('user_tok_mock'),
+  AuthError: class AuthError extends Error {},
 }));
 
 describe('chat tools', () => {
@@ -14,7 +20,9 @@ describe('chat tools', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     server = new McpServer({ name: 'test', version: '1.0.0' });
-    registerChatTools(server);
+    const mockDb = {} as Db;
+    const mockCtx: SessionContext = { mcpSessionId: 'test-session', openId: 'test-open-id' };
+    registerChatTools(server, mockCtx, mockDb);
   });
 
   it('message_send_user sends message directly via email', async () => {

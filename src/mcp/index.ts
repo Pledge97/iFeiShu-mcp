@@ -15,7 +15,7 @@ export function createMcpServer(ctx: SessionContext, db: Db): McpServer {
   registerAuthTools(server, ctx, db);
   registerDocumentTools(server, ctx, db);
   registerWikiTools(server, ctx, db);
-  registerChatTools(server);
+  registerChatTools(server, ctx, db);
 
   return server;
 }

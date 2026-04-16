@@ -3,6 +3,9 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { getAppAccessToken } from '../../feishu/appAuth.js';
 import { createFeishuClient } from '../../feishu/client.js';
 import { logToolCall } from '../logger.js';
+import type { Db } from '../../db/index.js';
+import type { SessionContext } from '../../feishu/types.js';
+import { getUserToken, AuthError } from '../../feishu/userAuth.js';
 
 /** 域账号转完整邮箱，例如 zhangsan → zhangsan@iflytek.com */
 function toEmail(account: string): string {
@@ -170,7 +173,7 @@ async function resolveChatId(
  *
  * @param server MCP 服务器实例
  */
-export function registerChatTools(server: McpServer) {
+export function registerChatTools(server: McpServer, ctx: SessionContext, db: Db) {
   server.tool(
     'message_send_user',
     '以机器人身份向指定用户发送消息，传入域账号即可（如 zhangsan），支持普通文本和卡片消息',
