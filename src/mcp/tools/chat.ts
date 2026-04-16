@@ -245,6 +245,58 @@ export function registerChatTools(server: McpServer, ctx: SessionContext, db: Db
     }
   );
 
+  server.tool(
+    'chat_list',
+    '列出当前登录用户可访问的会话（群聊和单聊）',
+    {
+      count: z.number().min(1).max(100).optional().default(20).describe('返回会话数量，默认 20'),
+      sort_type: z.enum(['ByCreateTimeAsc', 'ByActiveTimeDesc']).optional().default('ByActiveTimeDesc').describe('排序方式'),
+    },
+    async ({ count, sort_type }: { count?: number; sort_type?: 'ByCreateTimeAsc' | 'ByActiveTimeDesc' }) => {
+      logToolCall('chat_list', { count, sort_type });
+      try {
+        const token = await getUserToken(db, ctx);
+        const client = createFeishuClient(token);
+
+        const pageSize = count ?? 20;
+        const chats: any[] = [];
+        let pageToken = '';
+
+        while (chats.length < pageSize) {
+          const params: Record<string, any> = {
+            page_size: Math.min(pageSize - chats.length, 100),
+            sort_type: sort_type ?? 'ByActiveTimeDesc',
+          };
+          if (pageToken) params.page_token = pageToken;
+
+          const res = await client.get('/im/v1/chats', { params });
+          const items = res.data?.items ?? [];
+          chats.push(...items);
+
+          if (!res.data?.has_more) break;
+          pageToken = res.data?.page_token ?? '';
+          if (!pageToken) break;
+        }
+
+        if (chats.length === 0) {
+          return { content: [{ type: 'text' as const, text: '暂无可访问会话' }] };
+        }
+
+        const lines = chats.slice(0, pageSize).map((chat: any) => {
+          const name = chat.name || '（未命名）';
+          const chatId = chat.chat_id;
+          const mode = chat.chat_mode ? ` [${chat.chat_mode}]` : '';
+          return `- ${name}${mode}\n  chat_id: ${chatId}`;
+        });
+
+        return { content: [{ type: 'text' as const, text: `会话列表（共 ${lines.length} 个）：\n\n${lines.join('\n\n')}` }] };
+      } catch (err) {
+        const msg = err instanceof AuthError ? err.message : `飞书 API 错误：${String(err)}`;
+        return { content: [{ type: 'text' as const, text: msg }] };
+      }
+    }
+  );
+
   /* server.tool(
     'chat_create',
     '创建新的飞书群聊并邀请指定成员，传入域账号列表即可（如 ["zhangsan", "lisi"]）',

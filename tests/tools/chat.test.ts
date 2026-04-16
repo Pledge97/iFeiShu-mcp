@@ -66,4 +66,32 @@ describe('chat tools', () => {
     const result = await handler({ name: 'Project Alpha', message: 'Team update' });
     expect(result.content[0].text).toContain('msg_002');
   });
+
+  it('chat_list returns user chats with pagination', async () => {
+    const mockGet = vi.fn().mockResolvedValue({
+      code: 0,
+      data: {
+        items: [
+          { chat_id: 'oc_123', name: 'Team Chat', chat_mode: 'group' },
+          { chat_id: 'oc_456', name: 'Direct Message', chat_mode: 'p2p' },
+        ],
+        has_more: false,
+        page_token: '',
+      },
+    });
+    vi.mocked(axios.create).mockReturnValue({
+      get: mockGet,
+      post: vi.fn(),
+      interceptors: { response: { use: vi.fn() } },
+    } as any);
+
+    const handler = (server as any)._registeredTools['chat_list']?.handler;
+    expect(handler).toBeDefined();
+    const result = await handler({ count: 20 });
+    expect(result.content[0].text).toContain('oc_123');
+    expect(result.content[0].text).toContain('Team Chat');
+    expect(mockGet).toHaveBeenCalledWith('/im/v1/chats', expect.objectContaining({
+      params: expect.objectContaining({ page_size: 20 }),
+    }));
+  });
 });
