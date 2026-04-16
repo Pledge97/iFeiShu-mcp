@@ -9,11 +9,14 @@ vi.mock('../../src/feishu/appAuth.js', () => ({
   getAppAccessToken: vi.fn().mockResolvedValue('app_token_mock'),
 }));
 
-const SESSION_ID = 'wiki-test-session';
+const OPEN_ID = 'ou_w';
 const SESSION = {
-  session_id: SESSION_ID, open_id: 'ou_w', user_name: 'WikiUser',
-  access_token: 'user_tok', refresh_token: 'rt_w',
-  expires_at: 9999999999, updated_at: 1000,
+  open_id: OPEN_ID,
+  user_name: 'WikiUser',
+  access_token: 'user_tok',
+  refresh_token: 'rt_w',
+  expires_at: 9999999999,
+  updated_at: 1000,
 };
 
 describe('wiki tools', () => {
@@ -25,20 +28,23 @@ describe('wiki tools', () => {
     db = await createDb(':memory:');
     db.upsertSession(SESSION);
     server = new McpServer({ name: 'test', version: '1.0.0' });
-    registerWikiTools(server, SESSION_ID, db);
+    const ctx = { mcpSessionId: 'wiki-test-session', openId: OPEN_ID };
+    registerWikiTools(server, ctx, db);
   });
 
   it('wiki_list_spaces returns space list', async () => {
     const mockGet = vi.fn().mockResolvedValue({
+      code: 0,
       data: {
-        code: 0,
-        data: {
-          items: [{ space_id: 'sp1', name: 'Engineering Wiki', description: 'Eng docs' }],
-          has_more: false,
-        },
+        items: [{ space_id: 'sp1', name: 'Engineering Wiki', description: 'Eng docs' }],
+        has_more: false,
       },
     });
-    vi.mocked(axios.create).mockReturnValue({ get: mockGet, post: vi.fn() } as any);
+    vi.mocked(axios.create).mockReturnValue({
+      get: mockGet,
+      post: vi.fn(),
+      interceptors: { response: { use: vi.fn() } },
+    } as any);
 
     const handler = (server as any)._registeredTools['wiki_list_spaces'].handler;
     const result = await handler({});
@@ -48,15 +54,17 @@ describe('wiki tools', () => {
 
   it('wiki_list_nodes returns node list for a space', async () => {
     const mockGet = vi.fn().mockResolvedValue({
+      code: 0,
       data: {
-        code: 0,
-        data: {
-          items: [{ node_token: 'nt1', title: 'Getting Started', obj_type: 'docx', obj_token: 'doc_nt1', has_child: false }],
-          has_more: false,
-        },
+        items: [{ node_token: 'nt1', title: 'Getting Started', obj_type: 'docx', obj_token: 'doc_nt1', has_child: false }],
+        has_more: false,
       },
     });
-    vi.mocked(axios.create).mockReturnValue({ get: mockGet, post: vi.fn() } as any);
+    vi.mocked(axios.create).mockReturnValue({
+      get: mockGet,
+      post: vi.fn(),
+      interceptors: { response: { use: vi.fn() } },
+    } as any);
 
     const handler = (server as any)._registeredTools['wiki_list_nodes'].handler;
     const result = await handler({ space_id: 'sp1' });
@@ -65,14 +73,16 @@ describe('wiki tools', () => {
 
   it('wiki_get_node returns node info', async () => {
     const mockGet = vi.fn().mockResolvedValue({
+      code: 0,
       data: {
-        code: 0,
-        data: {
-          node: { node_token: 'nt1', title: 'Getting Started', obj_type: 'docx', obj_token: 'doc_nt1', has_child: false, parent_node_token: '' },
-        },
+        node: { node_token: 'nt1', title: 'Getting Started', obj_type: 'docx', obj_token: 'doc_nt1', has_child: false, parent_node_token: '' },
       },
     });
-    vi.mocked(axios.create).mockReturnValue({ get: mockGet, post: vi.fn() } as any);
+    vi.mocked(axios.create).mockReturnValue({
+      get: mockGet,
+      post: vi.fn(),
+      interceptors: { response: { use: vi.fn() } },
+    } as any);
 
     const handler = (server as any)._registeredTools['wiki_get_node'].handler;
     const result = await handler({ node_token: 'nt1' });

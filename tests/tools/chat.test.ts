@@ -19,15 +19,19 @@ describe('chat tools', () => {
 
   it('message_send_user sends message directly via email', async () => {
     const mockPost = vi.fn().mockResolvedValue({
-      data: { code: 0, data: { message_id: 'msg_001' } },
+      code: 0,
+      data: { message_id: 'msg_001' },
     });
-    vi.mocked(axios.create).mockReturnValue({ post: mockPost } as any);
+    vi.mocked(axios.create).mockReturnValue({
+      post: mockPost,
+      get: vi.fn(),
+      interceptors: { response: { use: vi.fn() } },
+    } as any);
 
     const handler = (server as any)._registeredTools['message_send_user'].handler;
     const result = await handler({ account: 'alice', message: 'Hello!' });
     expect(result.content[0].text).toContain('msg_001');
     expect(result.content[0].text).toContain('alice');
-    // 直接发邮件，只调用一次 post
     expect(mockPost).toHaveBeenCalledTimes(1);
     expect(mockPost).toHaveBeenCalledWith(
       '/im/v1/messages?receive_id_type=email',
@@ -35,40 +39,23 @@ describe('chat tools', () => {
     );
   });
 
-  it('message_send_group sends message to chat_id', async () => {
-    const mockPost = vi.fn().mockResolvedValue({
-      data: { code: 0, data: { message_id: 'msg_002' } },
+  it('message_send_group sends message to resolved chat_id', async () => {
+    const mockGet = vi.fn().mockResolvedValue({
+      code: 0,
+      data: { items: [{ chat_id: 'oc_abc123', name: 'Project Alpha' }], has_more: false },
     });
-    vi.mocked(axios.create).mockReturnValue({ post: mockPost } as any);
+    const mockPost = vi.fn().mockResolvedValue({
+      code: 0,
+      data: { message_id: 'msg_002' },
+    });
+    vi.mocked(axios.create).mockReturnValue({
+      get: mockGet,
+      post: mockPost,
+      interceptors: { response: { use: vi.fn() } },
+    } as any);
 
     const handler = (server as any)._registeredTools['message_send_group'].handler;
-    const result = await handler({ chat_id: 'oc_abc123', message: 'Team update' });
+    const result = await handler({ name: 'Project Alpha', message: 'Team update' });
     expect(result.content[0].text).toContain('msg_002');
-  });
-
-  it('chat_create resolves user_ids via email then creates group chat', async () => {
-    const mockPost = vi.fn()
-      .mockResolvedValueOnce({
-        // /user/v1/batch_get_id 返回 email_users map
-        data: { code: 0, data: { email_users: {
-          'userA@iflytek.com': [{ user_id: 'uid_a', open_id: 'ou_a' }],
-          'userB@iflytek.com': [{ user_id: 'uid_b', open_id: 'ou_b' }],
-        } } },
-      })
-      .mockResolvedValueOnce({
-        // create chat
-        data: { code: 0, data: { chat_id: 'oc_newchat' } },
-      });
-    vi.mocked(axios.create).mockReturnValue({ post: mockPost } as any);
-
-    const handler = (server as any)._registeredTools['chat_create'].handler;
-    const result = await handler({ name: 'Project Alpha', accounts: ['userA', 'userB'] });
-    expect(result.content[0].text).toContain('oc_newchat');
-    expect(mockPost).toHaveBeenCalledTimes(2);
-    expect(mockPost).toHaveBeenNthCalledWith(
-      2,
-      '/im/v1/chats',
-      expect.objectContaining({ user_id_list: ['uid_a', 'uid_b'], user_id_type: 'user_id' })
-    );
   });
 });

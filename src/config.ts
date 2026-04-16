@@ -1,3 +1,6 @@
+import { homedir } from 'os';
+import { join } from 'path';
+
 /** 全局配置，从环境变量读取，启动时一次性解析。 */
 export const config = {
   feishu: {
@@ -9,7 +12,10 @@ export const config = {
     redirectUri: process.env.OAUTH_REDIRECT_URI ?? 'http://localhost:5201/oauth/callback',
   },
   server: {
+    mode: process.argv.includes('--stdio') ? ('stdio' as const) : ('http' as const),
     port: parseInt(process.env.PORT ?? '3000', 10),
-    dbPath: process.env.DB_PATH ?? './data/tokens.db',
+    dbPath: process.argv.includes('--stdio')
+      ? join(homedir(), '.xfchat-mcp', 'tokens.db')
+      : './data/tokens.db',
   },
 };

@@ -10,7 +10,6 @@ describe('db', () => {
 
   it('upserts and retrieves a session', () => {
     db.upsertSession({
-      session_id: 'sess-1',
       open_id: 'ou_abc',
       user_name: 'Alice',
       access_token: 'at_123',
@@ -18,7 +17,7 @@ describe('db', () => {
       expires_at: 9999999999,
       updated_at: Math.floor(Date.now() / 1000),
     });
-    const session = db.getSession('sess-1');
+    const session = db.getSession('ou_abc');
     expect(session?.open_id).toBe('ou_abc');
     expect(session?.user_name).toBe('Alice');
   });
@@ -29,7 +28,6 @@ describe('db', () => {
 
   it('deletes a session', () => {
     db.upsertSession({
-      session_id: 'sess-2',
       open_id: 'ou_xyz',
       user_name: 'Bob',
       access_token: 'at_789',
@@ -37,13 +35,12 @@ describe('db', () => {
       expires_at: 9999999999,
       updated_at: Math.floor(Date.now() / 1000),
     });
-    db.deleteSession('sess-2');
-    expect(db.getSession('sess-2')).toBeUndefined();
+    db.deleteSession('ou_xyz');
+    expect(db.getSession('ou_xyz')).toBeUndefined();
   });
 
   it('updates existing session on upsert', () => {
     const base = {
-      session_id: 'sess-3',
       open_id: 'ou_upd',
       user_name: 'Carol',
       access_token: 'at_old',
@@ -53,6 +50,6 @@ describe('db', () => {
     };
     db.upsertSession(base);
     db.upsertSession({ ...base, access_token: 'at_new', expires_at: 9999999999 });
-    expect(db.getSession('sess-3')?.access_token).toBe('at_new');
+    expect(db.getSession('ou_upd')?.access_token).toBe('at_new');
   });
 });
