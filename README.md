@@ -155,7 +155,8 @@ token 会自动续期，通常只需登录一次（30 天内有效）。
 - `drive:drive:readonly` — 搜索云盘文件
 - `wiki:wiki:readonly` — 查看知识库
 - `wiki:wiki` — 在知识库中创建文档（`wiki_create_document` 工具需要）
-- `im:message` — 读取消息历史（`chat_list` 和 `message_get_history` 工具需要）
+- `im:chat:readonly` — 读取会话列表（`chat_list` 工具需要）
+- `im:message:readonly` — 读取消息历史（`message_get_history` 工具需要）
 - `im:message:send_as_bot` — 机器人发消息
 - `im:chat` — 查看群列表（按群名发消息）
 
