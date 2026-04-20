@@ -145,13 +145,4 @@ describe('chat tools', () => {
     const result = await handler({ count: 20 });
     expect(result.content[0].text).toContain('未登录');
   });
-
-  it('message_get_history returns auth error when not logged in', async () => {
-    const { getUserToken } = await import('../../src/feishu/userAuth.js');
-    vi.mocked(getUserToken).mockRejectedValueOnce(new Error('未登录，请先调用 auth_login'));
-
-    const handler = (server as any)._registeredTools['message_get_history'].handler;
-    const result = await handler({ chat_id: 'oc_test' });
-    expect(result.content[0].text).toContain('未登录');
-  });
 });

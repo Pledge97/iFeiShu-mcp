@@ -316,8 +316,7 @@ export function registerChatTools(server: McpServer, ctx: SessionContext, db: Db
     }) => {
       logToolCall('message_get_history', { chat_id, count, sort_type, start_time, end_time });
       try {
-        const token = await getUserToken(db, ctx);
-        const client = createFeishuClient(token);
+        const client = await getBotClient();
 
         const pageSize = count ?? 20;
         const messages: any[] = [];
