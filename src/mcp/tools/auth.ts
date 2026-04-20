@@ -24,7 +24,7 @@ export function registerAuthTools(server: McpServer, ctx: SessionContext, db: Db
         client_id: config.feishu.appId,
         redirect_uri: config.oauth.redirectUri,
         state,
-        scope: 'wiki:wiki docx:document drive:drive:readonly im:message im:message:send_as_bot contact:user.employee_id:readonly',
+        scope: 'wiki:wiki docx:document drive:drive:readonly im:chat:readonly im:message:readonly im:message im:message:send_as_bot contact:user.employee_id:readonly',
       })
       const url = `${config.feishu.baseUrl}/open-apis/authen/v1/authorize?${params}`
 
@@ -55,7 +55,7 @@ export function registerAuthTools(server: McpServer, ctx: SessionContext, db: Db
       client_id: config.feishu.appId,
       redirect_uri: config.oauth.redirectUri,
       state: ctx.mcpSessionId,
-      scope: 'wiki:wiki docx:document drive:drive:readonly im:message im:message:send_as_bot contact:user.employee_id:readonly',
+      scope: 'wiki:wiki docx:document drive:drive:readonly im:chat:readonly im:message:readonly im:message im:message:send_as_bot contact:user.employee_id:readonly',
     })
     const url = `${config.feishu.baseUrl}/open-apis/authen/v1/authorize?${params}`
     return {
