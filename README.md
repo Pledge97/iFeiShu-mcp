@@ -19,7 +19,7 @@ OAUTH_REDIRECT_URI=http://your-server:5201/oauth/callback
 PORT=5201
 
 # 启动服务
-npx -y iFeiShu-mcp
+npx -y ifeishu-mcp
 ```
 
 > **注意：** `OAUTH_REDIRECT_URI` 需要在飞书开放平台的应用配置中添加为合法回调地址，且必须是服务器可被用户浏览器访问的地址。
@@ -47,7 +47,7 @@ npx -y iFeiShu-mcp
     "feishu": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "iFeiShu-mcp", "--stdio"],
+      "args": ["-y", "ifeishu-mcp", "--stdio"],
       "env": {
         "FEISHU_APP_ID": "cli_xxx",
         "FEISHU_APP_SECRET": "xxx",
@@ -85,13 +85,13 @@ cp .env.example .env
 ### 2. 安装依赖 & 启动
 
 ```bash
-npm install --ignore-scripts
+npm install
 npm run dev      # 开发模式（热重载）
 # 或
 npm run build && npm start   # 生产模式
-```
 
-> **注意：** 需使用 `--ignore-scripts` 跳过原生模块编译（sql.js 为纯 JS 实现，无需编译）。
+npm test          # 运行测试（17 个）
+```
 
 ### 3. 配置 Claude Code
 
@@ -108,7 +108,7 @@ npm run build && npm start   # 生产模式
 }
 ```
 
-### 4. 首次登录
+## 使用
 
 在 Claude Code 中调用：
 
@@ -155,26 +155,32 @@ token 会自动续期，通常只需登录一次（30 天内有效）。
 | -------------------- | --------------------------------------------------------------------- |
 | `message_send_user`  | 向指定用户发送消息，支持普通文本或卡片消息（卡片正文支持 Markdown）   |
 | `message_send_group` | 向指定群组发送消息，支持普通文本、@所有人、卡片消息，传入群组名称即可 |
-
-### 聊天读取
-
-| 工具                    | 说明                                                                         |
-| ----------------------- | ---------------------------------------------------------------------------- |
 | `chat_list`             | 列出当前登录用户可访问的会话（群聊和单聊），返回 chat_id、名称、类型（用户身份） |
-| `message_get_history`   | 按 chat_id 获取会话历史消息，支持数量限制和时间范围过滤（机器人身份）          |
+| `message_get_history`   | 按 chat_id 获取会话历史消息，支持数量限制和时间范围过滤（机器人身份，仅能获取机器人所在的群消息）          |
 
 ## 飞书应用权限清单
 
 在飞书开放平台控制台需开通以下权限：
 
-- `docx:document` — 查看、编辑文档
-- `drive:drive:readonly` — 搜索云盘文件
-- `wiki:wiki:readonly` — 查看知识库
-- `wiki:wiki` — 在知识库中创建文档（`wiki_create_document` 工具需要）
-- `im:chat:readonly` — 读取会话列表（`chat_list` 工具需要）
-- `im:message:readonly` — 读取消息历史（`message_get_history` 工具需要）
-- `im:message:send_as_bot` — 机器人发消息
-- `im:chat` — 查看群列表（按群名发消息）
+```
+wiki:wiki docx:document drive:drive:readonly im:chat:readonly im:message:readonly im:message im:message:send_as_bot im:message.group_msg contact:user.employee_id:readonly
+```
+
+### 文档与知识库权限
+- `docx:document` — 查看、编辑、创建飞书文档，支持获取文档内容、追加内容、覆写文档（`document_get`、`document_append`、`document_overwrite`、`document_create` 工具需要）
+- `drive:drive:readonly` — 搜索云盘文件，按关键词查找文档（`document_search` 工具需要）
+- `wiki:wiki:readonly` — 查看知识库信息，获取知识库列表、节点列表、节点详情（`wiki_list_spaces`、`wiki_list_nodes`、`wiki_get_node` 工具需要）
+- `wiki:wiki` — 在知识库中创建文档，支持在指定目录下新建文档（`wiki_create_document` 工具需要）
+
+### 消息与会话权限
+- `im:chat:readonly` — 读取会话列表，获取用户可访问的群聊和单聊信息（`chat_list` 工具需要）
+- `im:message:readonly` — 读取消息历史，获取机器人所在群的历史消息记录（`message_get_history` 工具需要）
+- `im:message` — 以用户身份发送消息，支持向个人或群组发送普通文本和富文本消息（基础消息发送能力）
+- `im:message:send_as_bot` — 以机器人身份发送消息，支持发送文本、卡片、@所有人等消息类型（`message_send_user`、`message_send_group` 工具需要）
+- `im:message.group_msg` — 接收群组消息事件，允许机器人接收群聊中的消息通知（消息事件订阅需要）
+
+### 通讯录权限
+- `contact:user.employee_id:readonly` — 读取用户工号信息，用于通过域账号查询用户的 open_id（`message_send_user` 按域账号发消息需要）
 
 ## 技术架构
 
@@ -184,12 +190,4 @@ token 会自动续期，通常只需登录一次（30 天内有效）。
 - **token 刷新：** user_access_token 自动续期（2h），refresh_token 30 天有效
 - **token 存储：**
   - HTTP 模式：`./data/tokens.db`（相对于启动目录）
-  - stdio 模式：`~/.xfchat-mcp/tokens.db`（用户 home 目录，跨重启持久化）
-
-## 开发
-
-```bash
-npm test          # 运行测试（17 个）
-npm run test:watch  # 监听模式
-npx tsc --noEmit  # 类型检查
-```
+  - stdio 模式：`~/.ifeishu-mcp/tokens.db`（用户 home 目录，跨重启持久化）

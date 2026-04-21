@@ -4,8 +4,8 @@ import { join } from 'path';
 /** 全局配置，从环境变量读取，启动时一次性解析。 */
 export const config = {
   feishu: {
-    appId: process.env.FEISHU_APP_ID ?? 'cli_a945c0ae1938d37a',
-    appSecret: process.env.FEISHU_APP_SECRET ?? 'thDzujBeZqLgID3ZJoaoDduimdMmOF4C',
+    appId: process.env.FEISHU_APP_ID ?? '',
+    appSecret: process.env.FEISHU_APP_SECRET ?? '',
     baseUrl: process.env.FEISHU_BASE_URL ?? 'https://open.feishu.cn',
     docUrl: process.env.FEISHU_DOC_URL ?? 'https://yf2ljykclb.xfchat.iflytek.com'
   },
@@ -17,7 +17,7 @@ export const config = {
     mode: process.argv.includes('--stdio') ? ('stdio' as const) : ('http' as const),
     port: parseInt(process.env.PORT ?? '5201', 10),
     dbPath: process.argv.includes('--stdio')
-      ? join(homedir(), '.xfchat-mcp', 'tokens.db')
+      ? join(homedir(), '.ifeishu-mcp', 'tokens.db')
       : './data/tokens.db',
   },
 };
