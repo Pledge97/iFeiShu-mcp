@@ -326,7 +326,7 @@ export function registerChatTools(server: McpServer, ctx: SessionContext, db: Db
           const params: Record<string, any> = {
             container_id_type: 'chat',
             container_id: chat_id,
-            page_size: Math.min(pageSize - messages.length, 100),
+            page_size: Math.min(pageSize - messages.length, 50),
             sort_type: sort_type ?? 'ByCreateTimeAsc',
           };
           if (pageToken) params.page_token = pageToken;
