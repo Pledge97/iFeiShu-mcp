@@ -8,7 +8,23 @@
 
 #### HTTP 模式（团队共享）
 
-部署到服务器，在 `~/.claude.json` 中配置：
+在服务器上配置环境变量并启动：
+
+```bash
+# 在服务器上创建 .env 文件
+FEISHU_APP_ID=cli_xxx
+FEISHU_APP_SECRET=xxx
+FEISHU_BASE_URL=https://open.xfchat.iflytek.com
+OAUTH_REDIRECT_URI=http://your-server:5201/oauth/callback
+PORT=5201
+
+# 启动服务
+npx -y iFeiShu-mcp
+```
+
+> **注意：** `OAUTH_REDIRECT_URI` 需要在飞书开放平台的应用配置中添加为合法回调地址，且必须是服务器可被用户浏览器访问的地址。
+
+团队成员在 `~/.claude.json` 中配置：
 
 ```json
 {
