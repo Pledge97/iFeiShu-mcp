@@ -12,7 +12,7 @@ import { getAppAccessToken } from '../feishu/appAuth.js';
 export function createTemporaryOAuthServer(
   db: Db,
   state: string,
-  onSuccess: (openId: string, userName: string) => void,
+  onSuccess: (openId: string) => void,
   onError: (error: string) => void
 ): { server: Server; port: number } {
   const app = express();
@@ -70,7 +70,7 @@ export function createTemporaryOAuthServer(
         </body></html>
       `);
 
-      onSuccess(userInfo.open_id, userInfo.name);
+      onSuccess(userInfo.open_id);
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       res.status(500).send(`<h1>登录失败</h1><pre>${message}</pre>`);

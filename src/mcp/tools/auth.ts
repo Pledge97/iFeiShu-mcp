@@ -69,8 +69,14 @@ export function registerAuthTools(server: McpServer, ctx: SessionContext, db: Db
     try {
       // getUserToken 内含自动绑定 ctx.openId + 自动续期逻辑
       await getUserToken(db, ctx);
-    } catch {
-      return { content: [{ type: 'text' as const, text: '未登录。请先调用 auth_login 完成授权。' }] }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : '未知错误';
+      return {
+        content: [{
+          type: 'text' as const,
+          text: `未登录。${message}`
+        }]
+      }
     }
     const session = db.getSession(ctx.openId!)
     if (!session) {
