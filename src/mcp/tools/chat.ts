@@ -385,7 +385,6 @@ export function registerChatTools(server: McpServer, ctx: SessionContext, db: Db
       try {
         const client = await getBotClient();
         const emails = accounts.map(toEmail);
-        console.log(emails)
         const { found: userIds, notFound } = await resolveUserIds(client, emails);
 
         if (userIds.length === 0) {
@@ -396,7 +395,6 @@ export function registerChatTools(server: McpServer, ctx: SessionContext, db: Db
           name,
           user_id_list: userIds,
         });
-        console.log(res)
         const chatId = res.data?.chat_id;
         const warnings = notFound.length > 0 ? `\n注意：以下账号未找到对应用户：${notFound.join(', ')}` : '';
         return {

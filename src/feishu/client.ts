@@ -17,10 +17,12 @@ export function createFeishuClient(token: string) {
 
   client.interceptors.response.use(
     (res) => {
-      console.log(
-        `[API Response] ${res.config?.method?.toUpperCase()} ${res.config?.url}`,
-        JSON.stringify(res.data),
-      );
+      if (config.server.mode === 'http') {
+        console.log(
+          `[API Response] ${res.config?.method?.toUpperCase()} ${res.config?.url}`,
+          JSON.stringify(res.data),
+        );
+      }
       return res.data;
     },
     (err) => {
